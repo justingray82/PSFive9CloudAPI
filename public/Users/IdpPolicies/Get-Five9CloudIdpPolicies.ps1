@@ -33,7 +33,7 @@ function Get-Five9CloudIdpPolicies {
     }
     
     try {
-        Invoke-RestMethod -Uri $uri -Method Put -Headers @{
+        Invoke-RestMethod -Uri $uri -Method Get -Headers @{
             Authorization = "Bearer $($global:Five9CloudToken.AccessToken)"
             'Content-Type' = 'application/json'
         }
