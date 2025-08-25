@@ -25,13 +25,21 @@ Compatible with multiple regions: US, CA, EU, IN, UK.
 
 # Usage
 
-Connect to domain with Five9 Cloud API
+Connects to ApiControl with provided CustomerKey/SecretId. Prompted to save credential file
 
-  ```Connect-Five9Cloud -DomainId "12345" -CustomerKey "YourCustomerKey" -SecretId "YourSecret" -Region "us"```
+```Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "ApiControl" -CustomerKey "CustomerKey12345" -SecretId "SecretId67890"```
 
-  or if you've agreed to save credentials for future use
+Connects to CloudAuth with provided Username/Password. Prompted to save credential file
 
-  ```Connect-Five9Cloud -ExistingAuthorization $true -DomainId "12345"```
+```Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "CloudAuth" -Username "user" -Password "password"```
+
+Uses ApiControl if you specify it
+
+```Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true -AuthEndpoint "ApiControl"```
+
+Prompts to choose if both credential types are stored
+
+```Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true```
  
 
 <ul>Parameters:
