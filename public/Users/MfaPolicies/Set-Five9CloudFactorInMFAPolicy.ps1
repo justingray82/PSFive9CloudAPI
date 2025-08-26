@@ -1,8 +1,8 @@
 ﻿# Five9Cloud PowerShell Module
-# Function: Update-Five9CloudFactorInMFAPolicy
+# Function: Set-Five9CloudFactorInMFAPolicy
 # Category: MfaPolicies
 
-function Update-Five9CloudFactorInMFAPolicy {
+function Set-Five9CloudFactorInMFAPolicy {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
