@@ -1,17 +1,33 @@
-﻿# Five9Cloud PowerShell Module
+# Five9Cloud PowerShell Module
 # Function: Get-Five9CloudMFAFactor
-# Category: MfaPolicies
+# Category: MFAFactors
+# CONSOLIDATED VERSION - Combines Get-Five9CloudMFAFactor, Get-Five9CloudMFAFactorList
 
 function Get-Five9CloudMFAFactor {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
-        [Parameter(Mandatory = $true)][string]$FactorId
+        [Parameter(Mandatory = $false)]
+        [string]$DomainId = $global:Five9CloudToken.DomainId,
+        
+        # Single MFA factor
+        [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
+        [string]$FactorId
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/factors/$FactorId"
+    # Build URI based on parameter set
+    switch ($PSCmdlet.ParameterSetName) {
+        'Single' {
+            # Original: Get-Five9CloudMFAFactor
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/factors/$FactorId"
+        }
+        
+        'List' {
+            # Original: Get-Five9CloudMFAFactorList
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/factors"
+        }
+    }
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{
@@ -19,6 +35,6 @@ function Get-Five9CloudMFAFactor {
             'Content-Type' = 'application/json'
         }
     } catch {
-        Write-Error "Failed to get MFA factor: $_"
+        Write-Error "Failed to retrieve MFA factor(s): $_"
     }
 }
