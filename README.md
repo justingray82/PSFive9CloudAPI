@@ -21,7 +21,7 @@ Compatible with multiple regions: US, CA, EU, IN, UK.
 
 3. Import the Module
   
-  ```Import-Module PSFive9CloudAPI```
+  ```Import-Module PSFive9CloudAPI -Force```
 
 # Usage
 
