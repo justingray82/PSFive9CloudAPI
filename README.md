@@ -10,46 +10,38 @@ Supports OAuth2 authentication.
 
 Compatible with multiple regions: US, CA, EU, IN, UK.
 
-# Installation
-1. Set Operating Directory
+# Quick Installation
 
-  ```cd {{Your Module Folder}}```
-
-2. Clone the repository
-
-  ```git clone https://github.com/justingray82/PSFive9CloudAPI.git```
-
-3. Import the Module
-  
-  ```Import-Module PSFive9CloudAPI -Force```
+```powershell
+irm "https://raw.githubusercontent.com/justingray82/PSFive9CloudAPI/main/Install-PSFive9CloudAPI.ps1" | iex
+Import-Module PSFive9CloudAPI -Force
+```
 
 # Usage
 
 Connects to ApiControl with provided CustomerKey/SecretId. Prompted to save credential file
 
-```Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "ApiControl" -CustomerKey "CustomerKey12345" -SecretId "SecretId67890"```
+```powershell
+Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "ApiControl" -CustomerKey "CustomerKey12345" -SecretId "SecretId67890"
+```
 
 Connects to CloudAuth with provided Username/Password. Prompted to save credential file
 
-```Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "CloudAuth" -Username "user" -Password "password"```
+```powershell
+Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "CloudAuth" -Username "user" -Password "password"```
+```
 
 Uses ApiControl if you specify it
 
-```Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true -AuthEndpoint "ApiControl"```
+```powershell
+Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true -AuthEndpoint "ApiControl"```
+```
 
 Prompts to choose if both credential types are stored
 
-```Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true```
- 
-
-<ul>Parameters:
-
-
-DomainId (Required): Your Five9 domain ID.
-CustomerKey (Required): Your API client ID.
-SecretId (Required): Your API client secret.
-Region (Optional): One of us, ca, eu, in, uk. Defaults to us.</ul>
-
+```powershell
+Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true
+```
 
 # Requirements
 PowerShell 5.1 or later.
