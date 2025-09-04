@@ -20,9 +20,9 @@ function Get-Five9CloudVerintSettings {
     } catch {
         # Handle 404 specifically - this means no Verint settings exist for the user
         if ($_.Exception.Response.StatusCode -eq 404) {
-            Write-Verbose "No Verint settings found for user $UserUID"
-            return $null
+            Write-Host "No Verint settings found for user $UserUID"
+        } else {
+            Write-Error "Failed to get Verint settings: $_"
         }
-        Write-Error "Failed to get Verint settings: $_"
     }
 }
