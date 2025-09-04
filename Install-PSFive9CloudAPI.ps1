@@ -1,4 +1,4 @@
-﻿# PSFive9CloudAPI Installation Script
+# PSFive9CloudAPI Installation Script
 # Run this script to install the PSFive9CloudAPI module
 
 Write-Host "Installing PSFive9CloudAPI module..." -ForegroundColor Green
@@ -17,7 +17,14 @@ try {
     # Remove existing module if present
     if (Test-Path $ModulePath) {
         Write-Host "Removing existing module..." -ForegroundColor Yellow
-        Remove-Item $ModulePath -Recurse -Force
+        # Try to unload the module first if it's loaded
+        if (Get-Module PSFive9CloudAPI -ErrorAction SilentlyContinue) {
+            Remove-Module PSFive9CloudAPI -Force
+            Write-Host "Unloaded existing module from memory" -ForegroundColor Yellow
+        }
+        # Wait a moment for file handles to release
+        Start-Sleep -Milliseconds 500
+        Remove-Item $ModulePath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     # Download the ZIP file
