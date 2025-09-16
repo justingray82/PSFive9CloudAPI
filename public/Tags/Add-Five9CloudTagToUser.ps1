@@ -1,4 +1,4 @@
-﻿# Five9Cloud PowerShell Module
+# Five9Cloud PowerShell Module
 # Function: Add-Five9CloudTagToUser
 # Category: Tags
 function Add-Five9CloudTagToUser {
@@ -11,7 +11,7 @@ function Add-Five9CloudTagToUser {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/tags/$TagId"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID/tags/$TagId"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Post -Headers @{
