@@ -4,14 +4,14 @@
 function Remove-Five9CloudRoleFromUser {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$UserUID,
         [Parameter(Mandatory = $true)][string]$Role
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/roles/$Role"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/roles/$Role"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Delete -Headers @{

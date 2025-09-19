@@ -5,7 +5,7 @@
 function Update-Five9CloudUserAuthNDateTime {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$UserUID,
         [Parameter(Mandatory = $true)][string]$AuthType,
         [datetime]$LoginTime
@@ -13,7 +13,7 @@ function Update-Five9CloudUserAuthNDateTime {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID/migration:log-in"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/migration:log-in"
     
     $body = @{
         authType = $AuthType

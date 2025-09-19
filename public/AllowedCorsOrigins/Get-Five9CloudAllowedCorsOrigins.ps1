@@ -4,12 +4,12 @@
 function Get-Five9CloudAllowedCorsOrigins {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId
+[string]$DomainId = $global:Five9CloudToken.DomainId
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/allowed-cors-origins"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/allowed-cors-origins"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{

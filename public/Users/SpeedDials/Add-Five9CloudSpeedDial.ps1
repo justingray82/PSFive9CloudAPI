@@ -5,7 +5,7 @@
 function Add-Five9CloudSpeedDial {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$Code,
         [Parameter(Mandatory = $true)][string]$DialedNumber,
         [string]$Description,
@@ -14,7 +14,7 @@ function Add-Five9CloudSpeedDial {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/speed-dials"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/speed-dials"
     
     $body = @{
         code = $Code

@@ -6,8 +6,6 @@
 function Get-Five9CloudPasswordPolicy {
     [CmdletBinding(DefaultParameterSetName = 'Domain')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
         
         # Get current user's password policy
         [Parameter(Mandatory = $true, ParameterSetName = 'CurrentUser')]
@@ -20,12 +18,12 @@ function Get-Five9CloudPasswordPolicy {
     switch ($PSCmdlet.ParameterSetName) {
         'Domain' {
             # Original: Get-Five9CloudPasswordPolicy
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/password-policy"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/password-policy"
         }
         
         'CurrentUser' {
             # Original: Get-Five9CloudMyPasswordPolicy
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/my-password-policy"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-password-policy"
         }
     }
     

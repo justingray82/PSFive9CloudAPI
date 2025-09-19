@@ -5,13 +5,13 @@
 function Convert-Five9CloudUser {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$UserUID
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID:migrate"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID:migrate"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Put -Headers @{

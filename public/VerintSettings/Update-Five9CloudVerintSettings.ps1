@@ -4,7 +4,7 @@
 function Update-Five9CloudVerintSettings {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$UserUID,
         [Parameter(Mandatory = $true)]
         [ValidateSet(
@@ -21,7 +21,7 @@ function Update-Five9CloudVerintSettings {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/wfo-verint-config/v1/domains/$DomainId/users/$UserUID/verint-settings"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/wfo-verint-config/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/verint-settings"
     
     $body = @{
         packages = $Packages

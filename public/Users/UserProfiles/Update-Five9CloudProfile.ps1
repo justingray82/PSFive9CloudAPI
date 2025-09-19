@@ -5,7 +5,7 @@
 function Update-Five9CloudProfile {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$UserProfileId,
         [string]$Name,
         [string]$Description,
@@ -15,7 +15,7 @@ function Update-Five9CloudProfile {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/user-profiles/$UserProfileId"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/user-profiles/$UserProfileId"
     
     $body = @{
         userProfileId = $UserProfileId

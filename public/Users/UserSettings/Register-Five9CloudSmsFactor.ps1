@@ -5,13 +5,13 @@
 function Register-Five9CloudSmsFactor {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [string]$PhoneNumber
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/my-factors/sms:enroll"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-factors/sms:enroll"
     
     $body = @{}
     if ($PhoneNumber) { $body['phoneNumber'] = $PhoneNumber }

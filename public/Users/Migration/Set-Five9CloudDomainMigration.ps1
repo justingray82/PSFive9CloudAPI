@@ -6,7 +6,7 @@
 function Set-Five9CloudDomainMigration {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)]
         [bool]$Enable
     )

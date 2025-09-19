@@ -6,8 +6,8 @@
 function Get-Five9CloudRole {
     [CmdletBinding(DefaultParameterSetName = 'All')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single role (custom or system)
         [Parameter(Mandatory = $true, ParameterSetName = 'Custom', Position = 0)]
@@ -47,7 +47,7 @@ function Get-Five9CloudRole {
         
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SystemList')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]
         [Parameter(Mandatory = $false, ParameterSetName = 'SystemList')]
@@ -60,27 +60,27 @@ function Get-Five9CloudRole {
     switch ($PSCmdlet.ParameterSetName) {
         'Custom' {
             # Original: Get-Five9CloudCustomRole
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/roles/$Role"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles/$Role"
         }
         
         'System' {
             # Original: Get-Five9CloudSystemRole
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/system-roles/$Role"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/system-roles/$Role"
         }
         
         'SystemList' {
             # Original: Get-Five9CloudSystemRoles
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/system-roles"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/system-roles"
         }
         
         'All' {
             # Original: Get-Five9CloudCustomAndSystemRoles
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/roles"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles"
         }
         
         'ProfileRole' {
             # Original: Get-Five9CloudUserProfileRole
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/user-profiles/$UserProfileId/role"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/user-profiles/$UserProfileId/role"
         }
     }
     

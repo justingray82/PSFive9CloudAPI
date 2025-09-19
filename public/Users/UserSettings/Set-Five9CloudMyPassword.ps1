@@ -5,7 +5,7 @@
 function Set-Five9CloudMyPassword {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [string]$OldPassword,
         [string]$NewPassword,
         [bool]$RevokeSessions
@@ -13,7 +13,7 @@ function Set-Five9CloudMyPassword {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/my-password:change"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-password:change"
     
     $body = @{}
     if ($OldPassword) { $body['oldPassword'] = $OldPassword }

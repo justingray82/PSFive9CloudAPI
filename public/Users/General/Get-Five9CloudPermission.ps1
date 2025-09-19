@@ -6,8 +6,8 @@
 function Get-Five9CloudPermission {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single permission
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -47,7 +47,7 @@ function Get-Five9CloudPermission {
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ByProfile')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ByProfile')]
@@ -60,17 +60,17 @@ function Get-Five9CloudPermission {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudPermission
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/permissions/$Permission"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/permissions/$Permission"
         }
         
         'List' {
             # Original: Get-Five9CloudPermissions
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/permissions"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/permissions"
         }
         
         'CurrentUser' {
             # Original: Get-Five9CloudCurrentUserPermissions
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/my-ui-permissions"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/my-ui-permissions"
         }
         
         'Internal' {
@@ -80,12 +80,12 @@ function Get-Five9CloudPermission {
         
         'ByRole' {
             # Original: Get-Five9CloudRolePermissions
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/roles/$Role/permissions"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles/$Role/permissions"
         }
         
         'ByProfile' {
             # Original: Get-Five9CloudUserProfilePermissions
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/user-profiles/$UserProfileId/permissions"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/user-profiles/$UserProfileId/permissions"
         }
     }
     

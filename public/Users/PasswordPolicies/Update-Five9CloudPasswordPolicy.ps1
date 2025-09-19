@@ -5,7 +5,7 @@
 function Update-Five9CloudPasswordPolicy {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [hashtable]$Complexity,
         [hashtable]$Lockout,
         [hashtable]$Age
@@ -13,7 +13,7 @@ function Update-Five9CloudPasswordPolicy {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/password-policy"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/password-policy"
     
     $body = @{}
     if ($Complexity) { $body['complexity'] = $Complexity }

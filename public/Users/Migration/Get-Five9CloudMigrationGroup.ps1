@@ -6,8 +6,8 @@
 function Get-Five9CloudMigrationGroup {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single group or group users
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -37,7 +37,7 @@ function Get-Five9CloudMigrationGroup {
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Users')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Users')]
@@ -50,7 +50,7 @@ function Get-Five9CloudMigrationGroup {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudMigrationGroup
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration-groups/$GroupId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration-groups/$GroupId"
             
             if ($PSBoundParameters.ContainsKey('UserStats')) {
                 $uri += "?userStats=$UserStats"
@@ -59,7 +59,7 @@ function Get-Five9CloudMigrationGroup {
         
         'List' {
             # Original: Get-Five9CloudMigrationGroupList
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration-groups"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration-groups"
             
             $queryParams = @{}
             if ($PSBoundParameters.ContainsKey('UserStats')) { 
@@ -78,7 +78,7 @@ function Get-Five9CloudMigrationGroup {
         
         'Users' {
             # Original: Get-Five9CloudMigrationGroupUsers
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration-groups/$GroupId/users"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration-groups/$GroupId/users"
             
             $queryParams = @{}
             if ($Filter) { $queryParams['filter'] = $Filter }

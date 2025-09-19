@@ -5,12 +5,12 @@
 function Undo-Five9CloudDomainMigration {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId
+[string]$DomainId = $global:Five9CloudToken.DomainId
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration:rollback"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration:rollback"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Put -Headers @{

@@ -5,7 +5,7 @@
 function Update-Five9CloudMigrationGroup {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$GroupId,
         [string]$Name,
         [datetime]$StartDate,
@@ -15,7 +15,7 @@ function Update-Five9CloudMigrationGroup {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration-groups/$GroupId"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration-groups/$GroupId"
     
     $body = @{}
     if ($Name) { $body['name'] = $Name }

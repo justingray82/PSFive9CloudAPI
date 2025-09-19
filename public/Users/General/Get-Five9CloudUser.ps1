@@ -6,8 +6,8 @@
 function Get-Five9CloudUser {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single user retrieval
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -56,7 +56,7 @@ function Get-Five9CloudUser {
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ByApp')]
         [Parameter(Mandatory = $false, ParameterSetName = 'MigrationList')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ByApp')]
@@ -85,7 +85,7 @@ function Get-Five9CloudUser {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudUser
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID"
             if ($Fields) {
                 $uri += "?fields=$Fields"
             }
@@ -93,20 +93,20 @@ function Get-Five9CloudUser {
         
         'List' {
             # Original: Get-Five9CloudUsers / Get-Five9CloudUserList
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users"
         }
         
         'ByApp' {
             # Original: Get-Five9CloudUsersByAppId
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/applications/$AppId/users"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/applications/$AppId/users"
         }
         
         'Migration' {
             # Original: Get-Five9CloudUserMigrationDetails / Get-Five9CloudDomainMigrationDetails
             if ($UserUID) {
-                $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID/migration"
+                $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/migration"
             } else {
-                $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration"
+                $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration"
                 
                 $queryParams = @{}
                 if ($PSBoundParameters.ContainsKey('FitnessStats')) { 
@@ -124,17 +124,17 @@ function Get-Five9CloudUser {
         
         'MigrationList' {
             # Original: Get-Five9CloudUsersMigrationDetails
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/migration"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/migration"
         }
         
         'EmailVerification' {
             # Original: Get-Five9CloudUserEmailVerificationStatus
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/email-verification"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/email-verification"
         }
         
         'IdpLogin' {
             # Original: Get-Five9CloudUserIdpLoginDetails
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/my-idp"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-idp"
         }
     }
     

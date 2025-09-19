@@ -6,14 +6,14 @@
 function Get-Five9CloudMFAPolicy {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
+
         [string]$DomainId = $global:Five9CloudToken.DomainId
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
     # Original: Get-Five9CloudMFAPolicy
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/policy"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/mfa/policy"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{

@@ -4,7 +4,7 @@
 function Add-Five9CloudVerintSettings {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$UserUID,
         [Parameter(Mandatory = $true)]
         [ValidateSet(
@@ -18,13 +18,13 @@ function Add-Five9CloudVerintSettings {
             'call-recording.advanced-desktop-analytics'
         )]
         [string[]]$Packages,
-        [Parameter(Mandatory = $false)][string]$ScreenRecordingDomainName,
-        [Parameter(Mandatory = $false)][string]$ScreenRecordingLoginName
+		[string]$ScreenRecordingDomainName,
+		[string]$ScreenRecordingLoginName
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/wfo-verint-config/v1/domains/$DomainId/users/$UserUID/verint-settings"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/wfo-verint-config/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/verint-settings"
     
     # Validate that both screen recording parameters are provided together or neither is provided
     $hasDomainName = -not [string]::IsNullOrEmpty($ScreenRecordingDomainName)

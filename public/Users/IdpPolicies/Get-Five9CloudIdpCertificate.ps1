@@ -6,8 +6,8 @@
 function Get-Five9CloudIdpCertificate {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # IDP Policy ID (required for all certificate operations)
         [Parameter(Mandatory = $true, Position = 0)]
@@ -26,7 +26,7 @@ function Get-Five9CloudIdpCertificate {
         # Pagination parameters
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LegacyList')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LegacyList')]
@@ -42,12 +42,12 @@ function Get-Five9CloudIdpCertificate {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudIdpPolicyCertificate
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/idp-policies/$IdpPolicyId/certificates/$IdpCertificateId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/idp-policies/$IdpPolicyId/certificates/$IdpCertificateId"
         }
         
         'List' {
             # Original: Get-Five9CloudIdpPolicyCertificates
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/idp-policies/$IdpPolicyId/certificates"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/idp-policies/$IdpPolicyId/certificates"
             
             $queryParams = @{}
             if ($PageLimit) { $queryParams['pageLimit'] = $PageLimit }
@@ -60,12 +60,12 @@ function Get-Five9CloudIdpCertificate {
         
         'Legacy' {
             # Original: Get-Five9CloudLegacyIdpCertificate
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/legacy-idp-policies/$IdpPolicyId/certificates/$IdpCertificateId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/legacy-idp-policies/$IdpPolicyId/certificates/$IdpCertificateId"
         }
         
         'LegacyList' {
             # Original: Get-Five9CloudLegacyIdpCertificateList
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/legacy-idp-policies/$IdpPolicyId/certificates"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/legacy-idp-policies/$IdpPolicyId/certificates"
             
             $queryParams = @{}
             if ($PageCursor) { $queryParams['pageCursor'] = $PageCursor }

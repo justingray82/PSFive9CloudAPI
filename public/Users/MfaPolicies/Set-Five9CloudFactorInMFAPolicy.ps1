@@ -5,7 +5,7 @@
 function Set-Five9CloudFactorInMFAPolicy {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$MfaPolicyId,
         [Parameter(Mandatory = $true)][string]$FactorId,
         [string]$Enrollment
@@ -13,7 +13,7 @@ function Set-Five9CloudFactorInMFAPolicy {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/policy/$MfaPolicyId/factor/$FactorId"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/mfa/policy/$MfaPolicyId/factor/$FactorId"
     
     $body = @{}
     if ($Enrollment) { $body['enrollment'] = $Enrollment }

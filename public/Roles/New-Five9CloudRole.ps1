@@ -4,7 +4,7 @@
 function New-Five9CloudRole {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [string]$FromRole,
         [Parameter(Mandatory = $true)][string]$Name,
         [string]$Description,
@@ -15,7 +15,7 @@ function New-Five9CloudRole {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/roles"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles"
     
     if ($FromRole) {
         $uri += "?fromRole=$FromRole"

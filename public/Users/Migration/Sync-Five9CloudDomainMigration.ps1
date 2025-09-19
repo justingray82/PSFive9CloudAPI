@@ -5,7 +5,7 @@
 function Sync-Five9CloudDomainMigration {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)]
         [ValidateSet('administrators', 'supervisors', 'agents', 'allUsers')]
         [string]$UserType,
@@ -15,7 +15,7 @@ function Sync-Five9CloudDomainMigration {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration/$UserType`:sync"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration/$UserType`:sync"
     
     $queryParams = @{}
     if ($UserUID) { $queryParams['userUID'] = $UserUID }

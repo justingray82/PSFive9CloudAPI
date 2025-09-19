@@ -6,8 +6,6 @@
 function Get-Five9CloudSpeedDial {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
         
         # Single speed dial
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -21,7 +19,7 @@ function Get-Five9CloudSpeedDial {
         [string]$PageCursor,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [string[]]$Sort
@@ -33,12 +31,12 @@ function Get-Five9CloudSpeedDial {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudSpeedDial
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/speed-dials/$SpeedDialId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/speed-dials/$SpeedDialId"
         }
         
         'List' {
             # Original: Get-Five9CloudSpeedDialList
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/speed-dials"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/speed-dials"
             
             $queryParams = @{}
             if ($Filter) { $queryParams['filter'] = $Filter }

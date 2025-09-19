@@ -6,8 +6,8 @@
 function Get-Five9CloudScope {
     [CmdletBinding(DefaultParameterSetName = 'General')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Domain-specific scopes
         [Parameter(Mandatory = $true, ParameterSetName = 'Domain')]
@@ -37,7 +37,7 @@ function Get-Five9CloudScope {
         
         'Domain' {
             # Original: Get-Five9CloudScopesForDomain
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/scopes"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/scopes"
             
             if ($Filter) {
                 $uri += "?filter=$Filter"

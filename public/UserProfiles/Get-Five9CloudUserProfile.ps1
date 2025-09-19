@@ -6,8 +6,8 @@
 function Get-Five9CloudUserProfile {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Get users for a specific profile
         [Parameter(Mandatory = $true, ParameterSetName = 'Users', Position = 0)]
@@ -38,7 +38,7 @@ function Get-Five9CloudUserProfile {
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Users')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Users')]
@@ -51,7 +51,7 @@ function Get-Five9CloudUserProfile {
     switch ($PSCmdlet.ParameterSetName) {
         'List' {
             # Original: Get-Five9CloudUserProfiles
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/user-profiles"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/user-profiles"
             
             $queryParams = @{}
             if ($UserProfileIds) { $queryParams['userProfileId'] = $UserProfileIds -join ',' }
@@ -70,7 +70,7 @@ function Get-Five9CloudUserProfile {
         
         'Users' {
             # Original: Get-Five9CloudProfileUsers
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/user-profiles/$UserProfileId/users"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/user-profiles/$UserProfileId/users"
             
             $queryParams = @{}
             if ($PageCursor) { $queryParams['pageCursor'] = $PageCursor }

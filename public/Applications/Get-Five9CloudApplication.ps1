@@ -6,8 +6,8 @@
 function Get-Five9CloudApplication {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single application
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -44,7 +44,7 @@ function Get-Five9CloudApplication {
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Domain')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Domain')]
@@ -58,7 +58,7 @@ function Get-Five9CloudApplication {
         'Single' {
             if ($DomainSpecific) {
                 # Original: Get-Five9CloudDomainApplication
-                $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/applications/$AppId"
+                $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/applications/$AppId"
             } else {
                 # Original: Get-Five9CloudApplication
                 $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/applications/$AppId"
@@ -72,12 +72,12 @@ function Get-Five9CloudApplication {
         
         'Domain' {
             # Original: Get-Five9CloudDomainApplications
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/applications"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/applications"
         }
         
         'CurrentUser' {
             # Original: Get-Five9CloudCurrentUserApplications
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/my-applications"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/my-applications"
         }
     }
     

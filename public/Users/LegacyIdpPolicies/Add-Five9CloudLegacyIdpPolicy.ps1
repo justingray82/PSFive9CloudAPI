@@ -5,7 +5,7 @@
 function Add-Five9CloudLegacyIdpPolicy {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [string]$Name,
         [string]$Issuer,
         [datetime]$ValidUntil,
@@ -16,7 +16,7 @@ function Add-Five9CloudLegacyIdpPolicy {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/legacy-idp-policies"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/legacy-idp-policies"
     
     $body = @{}
     if ($Name) { $body['name'] = $Name }

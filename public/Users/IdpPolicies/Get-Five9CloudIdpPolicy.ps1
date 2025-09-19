@@ -6,8 +6,8 @@
 function Get-Five9CloudIdpPolicy {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single policy
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -39,7 +39,7 @@ function Get-Five9CloudIdpPolicy {
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LegacyList')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LegacyList')]
@@ -52,7 +52,7 @@ function Get-Five9CloudIdpPolicy {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudIdpPolicy
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/idp-policies/$IdpPolicyId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/idp-policies/$IdpPolicyId"
             
             if ($PSBoundParameters.ContainsKey('GetCount')) {
                 $uri += "?getCount=$GetCount"
@@ -61,17 +61,17 @@ function Get-Five9CloudIdpPolicy {
         
         'List' {
             # Original: Get-Five9CloudIdpPolicies
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/idp-policies"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/idp-policies"
         }
         
         'Legacy' {
             # Original: Get-Five9CloudLegacyIdpPolicy
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/legacy-idp-policies/$IdpPolicyId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/legacy-idp-policies/$IdpPolicyId"
         }
         
         'LegacyList' {
             # Original: Get-Five9CloudLegacyIdpPolicyList
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/legacy-idp-policies"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/legacy-idp-policies"
         }
     }
     

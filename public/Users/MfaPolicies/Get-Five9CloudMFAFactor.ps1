@@ -6,8 +6,8 @@
 function Get-Five9CloudMFAFactor {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single MFA factor
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -20,12 +20,12 @@ function Get-Five9CloudMFAFactor {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudMFAFactor
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/factors/$FactorId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/mfa/factors/$FactorId"
         }
         
         'List' {
             # Original: Get-Five9CloudMFAFactorList
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/mfa/factors"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/mfa/factors"
         }
     }
     

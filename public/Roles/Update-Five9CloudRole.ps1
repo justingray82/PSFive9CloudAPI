@@ -4,7 +4,7 @@
 function Update-Five9CloudRole {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$Role,
         [string]$Name,
         [string]$Description,
@@ -14,7 +14,7 @@ function Update-Five9CloudRole {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/roles/$Role"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles/$Role"
     
     $body = @{}
     if ($Name) { $body['name'] = $Name }

@@ -5,7 +5,7 @@
 function Complete-Five9CloudDomainMigration {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)]
         [ValidateSet('administrators', 'supervisors', 'agents', 'allUsers')]
         [string]$UserType
@@ -13,7 +13,7 @@ function Complete-Five9CloudDomainMigration {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/migration/$UserType`:complete"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/migration/$UserType`:complete"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Put -Headers @{

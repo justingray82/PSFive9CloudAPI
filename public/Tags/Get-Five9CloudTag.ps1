@@ -6,8 +6,8 @@
 function Get-Five9CloudTag {
     [CmdletBinding(DefaultParameterSetName = 'List')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # Single tag by ID
         [Parameter(Mandatory = $true, ParameterSetName = 'Single', Position = 0)]
@@ -22,7 +22,7 @@ function Get-Five9CloudTag {
         [string]$PageCursor,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'List')]
         [string]$Filter
@@ -34,12 +34,12 @@ function Get-Five9CloudTag {
     switch ($PSCmdlet.ParameterSetName) {
         'Single' {
             # Original: Get-Five9CloudTagById
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/tags/$TagId"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/tags/$TagId"
         }
         
         'List' {
             # Original: Get-Five9CloudTags
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/tags"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/tags"
             
             $queryParams = @{}
             if ($PageCursor) { $queryParams['pageCursor'] = $PageCursor }
@@ -53,7 +53,7 @@ function Get-Five9CloudTag {
         
         'CurrentUser' {
             # Original: Get-Five9CloudCurrentUserTags
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/my-tags"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/my-tags"
         }
     }
     

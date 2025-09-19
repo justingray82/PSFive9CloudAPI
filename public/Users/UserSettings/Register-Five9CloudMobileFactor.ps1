@@ -3,14 +3,10 @@
 # Category: UserSettings
 
 function Register-Five9CloudMobileFactor {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId
-    )
-    
+  
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/my-factors/mobile:enroll"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-factors/mobile:enroll"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Post -Headers @{

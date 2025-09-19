@@ -1,13 +1,10 @@
 # Five9Cloud PowerShell Module
 # Function: Get-Five9CloudVerintSetting
 # Category: VerintSettings
-# CONSOLIDATED VERSION - Single function (only one Get function exists)
 
-function Get-Five9CloudVerintSetting {
+function Get-Five9CloudVerintSettings {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
         
         [Parameter(Mandatory = $true, Position = 0)]
         [string]$UserUID
@@ -16,7 +13,7 @@ function Get-Five9CloudVerintSetting {
     if (-not (Test-Five9CloudConnection)) { return }
     
     # Original: Get-Five9CloudVerintSettings
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/wfo-verint-config/v1/domains/$DomainId/users/$UserUID/verint-settings"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/wfo-verint-config/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/verint-settings"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{

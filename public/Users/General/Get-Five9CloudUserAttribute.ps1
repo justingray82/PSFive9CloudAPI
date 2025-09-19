@@ -6,8 +6,8 @@
 function Get-Five9CloudUserAttribute {
     [CmdletBinding(DefaultParameterSetName = 'Applications')]
     param (
-        [Parameter(Mandatory = $false)]
-        [string]$DomainId = $global:Five9CloudToken.DomainId,
+
+
         
         # User identifier (required for all attribute queries)
         [Parameter(Mandatory = $true, Position = 0)]
@@ -54,7 +54,7 @@ function Get-Five9CloudUserAttribute {
         [string]$PageCursor,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'Tags')]
-        [int]$PageLimit,
+        [int]$PageLimit = 1000,
         
         [Parameter(Mandatory = $false, ParameterSetName = 'Tags')]
         [string[]]$Sort
@@ -66,7 +66,7 @@ function Get-Five9CloudUserAttribute {
     switch ($PSCmdlet.ParameterSetName) {
         'Applications' {
             # Original: Get-Five9CloudUserApplications
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/applications"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/applications"
             if ($Included) {
                 $uri += "?included=$Included"
             }
@@ -74,27 +74,27 @@ function Get-Five9CloudUserAttribute {
         
         'AppPermissions' {
             # Original: Get-Five9CloudUserApplicationPermissions
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/applications/$AppId/check-permissions"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/applications/$AppId/check-permissions"
         }
         
         'Permissions' {
             # Original: Get-Five9CloudUserPermissions
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/permissions?from=$From"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/permissions?from=$From"
         }
         
         'PermissionRoles' {
             # Original: Get-Five9CloudUserPermissionRoles
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/permissions-roles"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/permissions-roles"
         }
         
         'Roles' {
             # Original: Get-Five9CloudUserRoles
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/users/$UserUID/roles"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/roles"
         }
         
         'Tags' {
             # Original: Get-Five9CloudUserTags
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID/tags"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/tags"
             
             $queryParams = @{}
             if ($Filter) { $queryParams['filter'] = $Filter }
@@ -109,12 +109,12 @@ function Get-Five9CloudUserAttribute {
         
         'Numbers' {
             # Original: Get-Five9CloudUserNumbers
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/users/$UserUID/numbers"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/numbers"
         }
         
         'MFAFactors' {
             # Original: Get-Five9CloudUserMFAFactors
-            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$DomainId/my-factors"
+            $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-factors"
         }
     }
     

@@ -6,14 +6,14 @@
 function Get-Five9CloudTrustedRange {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
+
         [string]$DomainId = $global:Five9CloudToken.DomainId
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
     # Original: Get-Five9CloudTrustedRanges
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/trusted-ip-ranges"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/trusted-ip-ranges"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{

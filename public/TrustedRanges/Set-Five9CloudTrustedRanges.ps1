@@ -4,14 +4,14 @@
 function Set-Five9CloudTrustedRanges {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [bool]$Enabled,
         [array]$IpRanges
     )
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/trusted-ip-ranges"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/trusted-ip-ranges"
     
     $body = @{}
     if ($PSBoundParameters.ContainsKey('Enabled')) { $body['enabled'] = $Enabled }

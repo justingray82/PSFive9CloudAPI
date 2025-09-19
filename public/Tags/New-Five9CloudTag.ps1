@@ -4,7 +4,7 @@
 function New-Five9CloudTag {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)][string]$DomainId = $global:Five9CloudToken.DomainId,
+
         [Parameter(Mandatory = $true)][string]$Name,
         [string]$Description,
         [hashtable]$Parent
@@ -12,7 +12,7 @@ function New-Five9CloudTag {
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$DomainId/tags"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/tags"
     
     $body = @{
         name = $Name
