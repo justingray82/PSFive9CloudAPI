@@ -6,7 +6,7 @@ It supports PowerShell 5.1 and PowerShell 7+, enabling you to authenticate using
 Features
 Easy-to-use PowerShell functions for common Five9 API tasks.
 
-Supports OAuth2 authentication.
+Supports OAuth2 authentication for API Control, User/Pass Basic for CloudAuth and NG Rest.
 
 Compatible with multiple regions: US, CA, EU, IN, UK.
 
