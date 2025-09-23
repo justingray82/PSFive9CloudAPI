@@ -80,7 +80,7 @@ function Connect-Five9Cloud {
                 throw "No stored credentials found for $authMethod authentication method."
             }
             
-            Set-GlobalToken -TokenData $result -DomainId $DomainId -Region $Region -ApiBaseUrl $apiBaseUrl
+            Set-GlobalToken -TokenData $result -DomainId $DomainId -Region $Region -ApiBaseUrl $apiBaseUrl -RestBasicAuth $credData.CloudAuth
             Write-Host "Connected using stored $authMethod credentials for domain $DomainId in region $Region"
             return
         } catch {
@@ -158,7 +158,7 @@ function Connect-Five9Cloud {
     }
 
     # Set global token
-    Set-GlobalToken -TokenData $result -DomainId $DomainId -Region $Region -ApiBaseUrl $apiBaseUrl
+    Set-GlobalToken -TokenData $result -DomainId $DomainId -Region $Region -ApiBaseUrl $apiBaseUrl -RestBasicAuth $encodedCreds
 
     # Offer to save credentials
     $save = Read-Host "Do you want to save these credentials for future use? (y/n)"
@@ -232,7 +232,8 @@ function Set-GlobalToken {
         [object]$TokenData,
         [string]$DomainId,
         [string]$Region,
-        [string]$ApiBaseUrl
+        [string]$ApiBaseUrl,
+        [string]$RestBasicAuth
     )
     
     $global:Five9CloudToken = @{
@@ -243,5 +244,7 @@ function Set-GlobalToken {
         DomainId = $DomainId
         Region = $Region
         ApiBaseUrl = $ApiBaseUrl
+        RestBaseUrl = "https://api.five9.com/restadmin/api"
+        RestBasicAuth = $RestBasicAuth
     }
 }

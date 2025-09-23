@@ -1,0 +1,38 @@
+﻿function Get-Five9CloudInboundCampaigns {
+    [CmdletBinding()]
+    param (
+        [string]$Fields,
+        [string]$Sort,
+        [long]$Offset,
+        [long]$Limit,
+        [string]$PageCursor,
+        [int]$PageLimit = 1000,
+        [string]$Filter
+    )
+    
+    if (-not (Test-Five9CloudConnection)) { return }
+    
+    $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/campaigns/inbound_campaigns"
+    
+    $queryParams = @{}
+    if ($Fields) { $queryParams['fields'] = $Fields }
+    if ($Sort) { $queryParams['sort'] = $Sort }
+    if ($Order) { $queryParams['order'] = $Order }
+    if ($PSBoundParameters.ContainsKey('Offset')) { $queryParams['offset'] = $Offset }
+    if ($PSBoundParameters.ContainsKey('Limit')) { $queryParams['limit'] = $Limit }
+    if ($PageCursor) { $queryParams['pageCursor'] = $PageCursor }
+    if ($PageLimit) { $queryParams['pageLimit'] = $PageLimit }
+    if ($Filter) { $queryParams['filter'] = $Filter }
+    
+    if ($queryParams.Count -gt 0) {
+        $uri += '?' + ($queryParams.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join '&'
+    }
+    
+    try {
+        Invoke-RestMethod -Uri $uri -Method Get -Headers @{
+            Authorization = "Basic $($global:Five9CloudToken.RestBasicAuth)"
+        }
+    } catch {
+        Write-Error "Failed to list inbound campaigns: $_"
+    }
+}
