@@ -12,7 +12,7 @@
     
     if (-not (Test-Five9CloudConnection)) { return }
     
-    $uri = "https://api.five9.com/restadmin/api/v1/domains/$($global:Five9CloudToken.DomainId)/campaigns/outbound_campaigns"
+    $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/campaigns/outbound_campaigns"
     
     $queryParams = @{}
     if ($Fields) { $queryParams['fields'] = $Fields }
@@ -25,12 +25,15 @@
     if ($Filter) { $queryParams['filter'] = $Filter }
     
     if ($queryParams.Count -gt 0) {
-        $uri += '?' + ($queryParams.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join '&'
+        $queryString = ($queryParams.GetEnumerator() | ForEach-Object { 
+            "$($_.Key)=$([System.Web.HttpUtility]::UrlEncode($_.Value))" 
+        }) -join '&'
+        $uri += "?$queryString"
     }
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{
-        Authorization = "Basic $($Global:Five9CloudToken.RestBasicAuth)"
+            Authorization = "Basic $($Global:Five9CloudToken.RestBasicAuth)"
         }
     } catch {
         Write-Error "Failed to list outbound campaigns: $_"

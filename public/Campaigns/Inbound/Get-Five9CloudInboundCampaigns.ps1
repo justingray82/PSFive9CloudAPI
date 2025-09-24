@@ -25,7 +25,10 @@
     if ($Filter) { $queryParams['filter'] = $Filter }
     
     if ($queryParams.Count -gt 0) {
-        $uri += '?' + ($queryParams.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join '&'
+        $queryString = ($queryParams.GetEnumerator() | ForEach-Object { 
+            "$($_.Key)=$([System.Web.HttpUtility]::UrlEncode($_.Value))" 
+        }) -join '&'
+        $uri += "?$queryString"
     }
     
     try {
