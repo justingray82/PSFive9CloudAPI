@@ -1,250 +1,451 @@
 function Connect-Five9Cloud {
-    [CmdletBinding(DefaultParameterSetName = 'Interactive')]
+    [CmdletBinding(DefaultParameterSetName = 'CloudAuth')]
     param (
-        [Parameter(ParameterSetName = 'ExistingAuth')]
-        [bool]$ExistingAuthorization,
-        
+        # Common Parameters
         [Parameter(Mandatory = $true)]
         [string]$DomainId,
         
-        [Parameter(ParameterSetName = 'ApiControl')]
-        [Parameter(ParameterSetName = 'Interactive')]
-        [string]$CustomerKey,
-        
-        [Parameter(ParameterSetName = 'ApiControl')]
-        [Parameter(ParameterSetName = 'Interactive')]
-        [string]$SecretId,
-        
         [Parameter(ParameterSetName = 'CloudAuth')]
-        [Parameter(ParameterSetName = 'Interactive')]
+        [Parameter(ParameterSetName = 'ApiAccessControl')]
+        [ValidateSet('US', 'UK', 'EU', 'CA')]
+        [string]$Region = 'US',
+        
+        # CloudAuth/REST API Parameters (Default)
+        [Parameter(ParameterSetName = 'CloudAuth', Mandatory = $false)]
         [string]$Username,
         
-        [Parameter(ParameterSetName = 'CloudAuth')]
-        [Parameter(ParameterSetName = 'Interactive')]
+        [Parameter(ParameterSetName = 'CloudAuth', Mandatory = $false)]
         [string]$Password,
         
-        [Parameter(ParameterSetName = 'ApiControl')]
         [Parameter(ParameterSetName = 'CloudAuth')]
-        [Parameter(ParameterSetName = 'Interactive')]
-        [Parameter(ParameterSetName = 'ExistingAuth')]
-        [ValidateSet("ApiControl", "CloudAuth")]
-        [string]$AuthEndpoint,
+        [switch]$CloudAuthOnly,  # Only authenticate to CloudAuth, not REST API
         
-        [ValidateSet("us", "ca", "eu", "in", "uk")]
-        [string]$Region = "us"
+        # API Access Control Parameters
+        [Parameter(ParameterSetName = 'ApiAccessControl', Mandatory = $true)]
+        [string]$ClientId,
+        
+        [Parameter(ParameterSetName = 'ApiAccessControl', Mandatory = $true)]
+        [SecureString]$ClientSecret,
+        
+        [Parameter(ParameterSetName = 'ApiAccessControl')]
+        [switch]$ApiAccessControl,
+        
+        # Existing Authorization Parameter
+        [Parameter(ParameterSetName = 'ExistingAuth')]
+        [switch]$ExistingAuthorization,
+        
+        [Parameter(ParameterSetName = 'ExistingAuth')]
+        [ValidateSet('CloudAuth', 'ApiAccessControl')]
+        [string]$AuthEndpoint = 'CloudAuth',
+        
+        # Credential Management
+        [switch]$SaveCredentials,
+        [switch]$ForceNewCredentials  # Force prompt even if saved credentials exist
     )
 
-    $credsPath = "$env:USERPROFILE\.five9cloud\$DomainId.cred"
-    $apiBaseUrl = "https://api.prod.$Region.five9.net"
+    $global:Five9CloudToken = @{
+        # Token Storage
+        ApiAccessControl = $null
+        CloudAuth = $null
+        RestApi = $null
+    
+        # Base URLs for existing functions
+        ApiBaseUrl = $null      # For CloudAuth and API Access Control
+        RestBaseUrl = "https://api.five9.com/restadmin/api"  # Static REST API URL
+    
+        # Common Properties
+        AccessToken = $null     # For bearer token auth
+        RestBasicAuth = $null   # For basic auth
+        DomainId = $null
+        Region = $null
+        ActiveAuthType = $null
+        ExpiresAt = $null
+    }
 
-    # Handle existing authorization
-    if ($PSCmdlet.ParameterSetName -eq 'ExistingAuth' -and $ExistingAuthorization) {
-        if (-not (Test-Path $credsPath)) {
-            throw "No stored credentials found for domain ID '$DomainId'. Please run without -ExistingAuthorization to provide credentials."
-        }
-        
-        try {
-            $credData = Get-Content $credsPath -Raw | ConvertFrom-Json
+    $global:Five9CloudCredentialPath = "$env:USERPROFILE\.five9cloud"
+    
+    # Initialize credential path
+    if (-not (Test-Path $global:Five9CloudCredentialPath)) {
+        New-Item -ItemType Directory -Path $global:Five9CloudCredentialPath -Force | Out-Null
+    }
+    
+    # Store domain and region
+    $global:Five9CloudToken.DomainId = $DomainId
+    $global:Five9CloudToken.Region = $Region
+    
+    # Set ApiBaseUrl based on region
+    $global:Five9CloudToken.ApiBaseUrl = "https://api.prod.$Region.five9.net"
+    
+    # RestBaseUrl is always static
+    $global:Five9CloudToken.RestBaseUrl = "https://api.five9.com/restadmin/api"
+    
+    # Determine authentication type
+    $authType = $PSCmdlet.ParameterSetName
+    
+    if ($authType -eq 'ExistingAuth') {
+        $authType = $AuthEndpoint
+        # Try to load saved credentials
+        if (-not (Load-Five9CloudCredentials -DomainId $DomainId -AuthType $authType)) {
+            Write-Warning "No saved credentials found for Domain: $DomainId, Auth Type: $authType"
+            Write-Host "Please provide credentials:" -ForegroundColor Yellow
             
-            # Determine which auth method to use
-            $authMethod = $AuthEndpoint
-            if (-not $authMethod) {
-                # If no AuthEndpoint specified, check what's available and choose
-                $availableMethods = @()
-                if ($credData.ApiControl) { $availableMethods += "ApiControl" }
-                if ($credData.CloudAuth) { $availableMethods += "CloudAuth" }
-                
-                if ($availableMethods.Count -eq 0) {
-                    throw "No valid credentials found in stored file."
-                } elseif ($availableMethods.Count -eq 1) {
-                    $authMethod = $availableMethods[0]
-                    Write-Host "Using stored $authMethod credentials"
-                } else {
-                    Write-Host "Multiple stored credentials found. Choose authentication method:"
-                    for ($i = 0; $i -lt $availableMethods.Count; $i++) {
-                        Write-Host "$($i + 1). $($availableMethods[$i])"
+            # Switch to appropriate auth flow
+            if ($authType -eq 'ApiAccessControl') {
+                $ClientId = Read-Host "Enter Client ID"
+                $ClientSecret = Read-Host "Enter Client Secret" -AsSecureString
+                $ApiAccessControl = $true
+            }
+            else {
+                $authType = 'CloudAuth'
+                $Username = Read-Host "Enter Username"
+                $Password = Read-Host "Enter Password" -AsSecureString
+            }
+        }
+    }
+    
+    # Handle saved credentials if not forcing new ones
+    if (-not $ForceNewCredentials) {
+        $savedCreds = Load-Five9CloudCredentials -DomainId $DomainId -AuthType $authType
+        if ($savedCreds) {
+            Write-Host "Found saved credentials for Domain: $DomainId" -ForegroundColor Gray
+            $useSaved = Read-Host "Use saved credentials? (Y/N)"
+            if ($useSaved -eq 'Y') {
+                if ($authType -eq 'ApiAccessControl') {
+                    $ClientId = $savedCreds.ClientId
+                    $ClientSecret = $savedCreds.ClientSecret
+                }
+                else {
+                    $Username = $savedCreds.Username
+                    if ($savedCreds.Password) {
+                        $Password = Convert-SecureStringToPlainText -SecureString $savedCreds.Password
                     }
-                    do {
-                        $choice = Read-Host "Enter choice (1-$($availableMethods.Count))"
-                    } while ($choice -notin (1..$availableMethods.Count))
-                    $authMethod = $availableMethods[$choice - 1]
+                }
+                # Update region if it was saved
+                if ($savedCreds.Region) {
+                    $Region = $savedCreds.Region
+                    $global:Five9CloudToken.Region = $Region
+                    $global:Five9CloudToken.ApiBaseUrl = "https://api.prod.$Region.five9.net"
                 }
             }
-            
-            # Use the selected auth method
-            if ($authMethod -eq "ApiControl" -and $credData.ApiControl) {
-                $result = Invoke-ApiControlAuth -ApiBaseUrl $apiBaseUrl -EncodedCreds $credData.ApiControl
-            } elseif ($authMethod -eq "CloudAuth" -and $credData.CloudAuth) {
-                $result = Invoke-CloudAuth -ApiBaseUrl $apiBaseUrl -EncodedCreds $credData.CloudAuth
-            } else {
-                throw "No stored credentials found for $authMethod authentication method."
-            }
-            
-            Set-GlobalToken -TokenData $result -DomainId $DomainId -Region $Region -ApiBaseUrl $apiBaseUrl -RestBasicAuth $credData.CloudAuth
-            Write-Host "Connected using stored $authMethod credentials for domain $DomainId in region $Region"
-            return
-        } catch {
-            Write-Error "Failed to authenticate with stored credentials: $_"
-            return
         }
-    }
-
-    # Interactive mode - determine auth method if not specified
-    if ($PSCmdlet.ParameterSetName -eq 'Interactive' -and -not $AuthEndpoint) {
-        Write-Host "Choose authentication method:"
-        Write-Host "1. API Control (OAuth2 with CustomerKey/SecretId)"
-        Write-Host "2. Cloud Auth (Username/Password)"
-        
-        do {
-            $choice = Read-Host "Enter choice (1 or 2)"
-        } while ($choice -notin @('1', '2'))
-        
-        $AuthEndpoint = if ($choice -eq '1') { 'ApiControl' } else { 'CloudAuth' }
     }
     
-    # Set default auth endpoint for parameter sets if not specified
-    if (-not $AuthEndpoint) {
-        if ($PSCmdlet.ParameterSetName -eq 'ApiControl') {
-            $AuthEndpoint = 'ApiControl'
-        } elseif ($PSCmdlet.ParameterSetName -eq 'CloudAuth') {
-            $AuthEndpoint = 'CloudAuth'
+    # Prompt for missing credentials
+    if ($authType -eq 'ApiAccessControl' -or $ApiAccessControl) {
+        if (-not $ClientId) { $ClientId = Read-Host "Enter Client ID" }
+        if (-not $ClientSecret) { $ClientSecret = Read-Host "Enter Client Secret" -AsSecureString }
+        
+        $result = Connect-ApiAccessControl -DomainId $DomainId -Region $Region `
+                                          -ClientId $ClientId -ClientSecret $ClientSecret
+    }
+    else {
+        # CloudAuth (and optionally REST API)
+        if (-not $Username) { $Username = Read-Host "Enter Username" }
+        if (-not $Password) { $Password = Read-Host "Enter Password" }
+        
+        $SecurePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
+        $result = Connect-CloudAuth -DomainId $DomainId -Region $Region `
+                                   -Username $Username -Password $SecurePassword
+        
+        # Also connect to REST API unless CloudAuthOnly is specified
+        if ($result -and -not $CloudAuthOnly) {
+            $restResult = Connect-RestApi -Username $Username -Password $SecurePassword
+            $result = $result -and $restResult
         }
     }
-
-    # Collect credentials based on auth method
-    if ($AuthEndpoint -eq 'ApiControl' -or $PSCmdlet.ParameterSetName -eq 'ApiControl') {
-        if (-not $CustomerKey -or -not $SecretId) {
-            if (-not $CustomerKey) {
-                $CustomerKey = Read-Host "Enter CustomerKey"
-            }
-            if (-not $SecretId) {
-                $SecretId = Read-Host "Enter SecretId" -AsSecureString
-                $SecretId = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecretId))
-            }
+    
+    # Handle credential saving
+    if ($result -and ($SaveCredentials -or (-not $SaveCredentials -and -not $ExistingAuthorization))) {
+        if (-not $SaveCredentials -and (-not $savedCreds)) {
+            $save = Read-Host "Save credentials for future use? (Y/N)"
+            $SaveCredentials = ($save -eq 'Y')
         }
         
-        $authString = "${CustomerKey}:${SecretId}"
-        $encodedCreds = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authString))
-        $authType = "ApiControl"
-        
-        try {
-            $result = Invoke-ApiControlAuth -ApiBaseUrl $apiBaseUrl -EncodedCreds $encodedCreds
-        } catch {
-            Write-Error "Failed to authenticate with API Control: $_"
-            return
-        }
-        
-    } elseif ($AuthEndpoint -eq 'CloudAuth' -or $PSCmdlet.ParameterSetName -eq 'CloudAuth') {
-        if (-not $Username -or -not $Password) {
-            if (-not $Username) {
-                $Username = Read-Host "Enter Username"
-            }
-            if (-not $Password) {
-                $Password = Read-Host "Enter Password" -AsSecureString
-                $Password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password))
-            }
-        }
-        
-        $authString = "${Username}:${Password}"
-        $encodedCreds = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authString))
-        $authType = "CloudAuth"
-        
-        try {
-            $result = Invoke-CloudAuth -ApiBaseUrl $apiBaseUrl -EncodedCreds $encodedCreds
-        } catch {
-            Write-Error "Failed to authenticate with Cloud Auth: $_"
-            return
+        if ($SaveCredentials) {
+            $credType = if ($ApiAccessControl) { 'ApiAccessControl' } else { 'CloudAuth' }
+            Save-Five9CloudCredentials -DomainId $DomainId -AuthType $credType `
+                                      -Username $Username -Password $SecurePassword `
+                                      -ClientId $ClientId -ClientSecret $ClientSecret `
+                                      -Region $Region
         }
     }
-
-    # Set global token
-    Set-GlobalToken -TokenData $result -DomainId $DomainId -Region $Region -ApiBaseUrl $apiBaseUrl -RestBasicAuth $encodedCreds
-
-    # Offer to save credentials
-    $save = Read-Host "Do you want to save these credentials for future use? (y/n)"
-    if ($save -match '^(y|yes)$') {
-        # Read existing credentials if they exist
-        $credData = @{}
-        if (Test-Path $credsPath) {
-            try {
-                $credData = Get-Content $credsPath -Raw | ConvertFrom-Json -AsHashtable
-            } catch {
-                Write-Warning "Could not read existing credential file. Creating new one."
-                $credData = @{}
-            }
-        }
-        
-        # Add/update the current auth method
-        $credData[$authType] = $encodedCreds
-        
-        if (-not (Test-Path (Split-Path $credsPath))) {
-            New-Item -ItemType Directory -Path (Split-Path $credsPath) -Force | Out-Null
-        }
-        
-        Set-Content -Path $credsPath -Value ($credData | ConvertTo-Json) -Force
-        Write-Host "Credentials saved to $credsPath"
+    
+    if ($result) {
+        Write-Host "Connection to Domain $DomainId successful." -ForegroundColor Gray
     }
-
-    Write-Host "Connected to domain $DomainId in region $Region using $authType"
-    Write-Host "API Base URL: $apiBaseUrl"
-    Write-Host "Access Token Acquired"
+    else {
+        Write-Error "Failed to connect to Five9 Cloud"
+    }
+    
+    #return $result
 }
+#endregion
 
-function Invoke-ApiControlAuth {
+#region Individual Authentication Functions
+function Connect-ApiAccessControl {
     param (
-        [string]$ApiBaseUrl,
-        [string]$EncodedCreds
+        [string]$DomainId,
+        [string]$Region,
+        [string]$ClientId,
+        [SecureString]$ClientSecret
     )
     
-    $authUrl = "$ApiBaseUrl/oauth2/v1/token"
-    
-    $response = Invoke-RestMethod -Uri $authUrl -Method Post -Headers @{
-        Authorization = "Basic $EncodedCreds"
-    } -ContentType "application/x-www-form-urlencoded" -Body "grant_type=client_credentials"
-    
-    return $response
+    try {
+        $uri = "https://api.prod.$Region.five9.net/oauth2/v1/token"
+        
+        # Convert secure string to plain text for the request
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($ClientSecret)
+        $plainSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        
+        $body = @{
+            grant_type = "client_credentials"
+            client_id = $ClientId
+            client_secret = $plainSecret
+            scope = "api"
+        }
+        
+        $response = Invoke-RestMethod -Uri $uri -Method Post -ContentType "application/x-www-form-urlencoded" -Body $body
+        
+        # Store token details
+        $global:Five9CloudToken.ApiAccessControl = @{
+            AccessToken = $response.access_token
+            TokenType = $response.token_type
+            ExpiresIn = $response.expires_in
+            ExpiresAt = (Get-Date).AddSeconds($response.expires_in - 60)  # Subtract 60 seconds for safety margin
+            Scope = $response.scope
+        }
+        
+        # Set main token properties for existing functions
+        $global:Five9CloudToken.AccessToken = $response.access_token
+        $global:Five9CloudToken.ExpiresAt = $global:Five9CloudToken.ApiAccessControl.ExpiresAt
+        $global:Five9CloudToken.ActiveAuthType = 'ApiAccessControl'
+        
+        # Clear sensitive data
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+        
+        return $true
+    }
+    catch {
+        Write-Error "Failed to authenticate to API Access Control: $_"
+        return $false
+    }
 }
 
-function Invoke-CloudAuth {
+function Connect-CloudAuth {
     param (
-        [string]$ApiBaseUrl,
-        [string]$EncodedCreds
+        [string]$DomainId,
+        [string]$Region,
+        [string]$Username,
+        [SecureString]$Password
     )
     
-    # Five9 Cloud Auth endpoint
-    $authUrl = "$ApiBaseUrl/cloudauthsvcs/v1/admin/login"
-    
+    try {
+        $uri = "https://api.prod.$Region.five9.net/cloudauthsvcs/v1/admin/login"
+        
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+        $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+
+        $authString = "${Username}:${plainPassword}"
+        $encodedCreds = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authString))
+        
     # Create JSON body with grant_type
     $body = @{
         grant_type = "client_credentials"
     } | ConvertTo-Json
     
-    $response = Invoke-RestMethod -Uri $authUrl -Method Post -Headers @{
-        Authorization = "Basic $EncodedCreds"
+    $response = Invoke-RestMethod -Uri $uri -Method Post -Headers @{
+        Authorization = "Basic $encodedCreds"
         'Content-Type' = 'application/json'
     } -Body $body
-    
-    return $response
+        
+        # Store token details
+        $global:Five9CloudToken.CloudAuth = @{
+            AccessToken = $response.access_token
+            TokenType = $response.token_type
+            ExpiresIn = $response.expires_in
+            ExpiresAt = (Get-Date).AddSeconds($response.expires_in - 60)  # Subtract 60 seconds for safety margin
+            Username = $Username
+        }
+        
+        # Set main token properties for existing functions
+        $global:Five9CloudToken.AccessToken = $response.access_token
+        $global:Five9CloudToken.ExpiresAt = $global:Five9CloudToken.CloudAuth.ExpiresAt
+        
+        if ($global:Five9CloudToken.ActiveAuthType -ne 'RestApi') {
+            $global:Five9CloudToken.ActiveAuthType = 'CloudAuth'
+        }
+        
+        # Clear sensitive data
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+        
+        return $true
+    }
+    catch {
+        Write-Error "Failed to authenticate to CloudAuth: $_"
+        return $false
+    }
 }
 
-function Set-GlobalToken {
+function Connect-RestApi {
     param (
-        [object]$TokenData,
-        [string]$DomainId,
-        [string]$Region,
-        [string]$ApiBaseUrl,
-        [string]$RestBasicAuth
+        [string]$Username,
+        [SecureString]$Password
     )
     
-    $global:Five9CloudToken = @{
-        AccessToken = $TokenData.access_token
-        TokenType = $TokenData.token_type
-        ExpiresIn = $TokenData.expires_in
-        ExpiresAt = (Get-Date).AddSeconds($TokenData.expires_in)
+    try {
+        # Convert credentials to Basic auth format
+        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+        $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
+        
+        $credentials = "$($Username):$($plainPassword)"
+        $encodedCreds = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($credentials))
+        
+        # Store REST API credentials
+        $global:Five9CloudToken.RestApi = @{
+            Authorization = "Basic $encodedCreds"
+            Username = $Username
+        }
+        
+        # Set Authorization for existing functions that might use it
+        $global:Five9CloudToken.RestBasicAuth = "$encodedCreds"
+        
+        # Clear sensitive data
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+
+        return $true
+         
+    }
+    catch {
+        Write-Error "Failed to authenticate to REST API: $_"
+        return $false
+    }
+}
+
+function Save-Five9CloudCredentials {
+    param (
+        [string]$DomainId,
+        [string]$AuthType,
+        [string]$Username,
+        [SecureString]$Password,
+        [string]$ClientId,
+        [SecureString]$ClientSecret,
+        [string]$Region
+    )
+    
+    $credFile = Join-Path $global:Five9CloudCredentialPath "$DomainId.$AuthType.cred"
+    
+    $credObject = @{
         DomainId = $DomainId
+        AuthType = $AuthType
         Region = $Region
-        ApiBaseUrl = $ApiBaseUrl
-        RestBaseUrl = "https://api.five9.com/restadmin/api"
-        RestBasicAuth = $RestBasicAuth
+        Timestamp = Get-Date
+    }
+    
+    if ($AuthType -eq 'CloudAuth') {
+        $credObject.Username = $Username
+        if ($Password) {
+            # Convert SecureString to encrypted string
+            $credObject.Password = ConvertFrom-SecureString $Password
+        }
+    }
+    elseif ($AuthType -eq 'ApiAccessControl') {
+        $credObject.ClientId = $ClientId
+        if ($ClientSecret) {
+            # Convert SecureString to encrypted string
+            $credObject.ClientSecret = ConvertFrom-SecureString $ClientSecret
+        }
+    }
+    
+    try {
+        $credObject | ConvertTo-Json | Out-File $credFile -Force
+        Write-Verbose "Credentials saved to $credFile"
+        return $true
+    }
+    catch {
+        Write-Warning "Failed to save credentials: $_"
+        return $false
+    }
+}
+
+function Load-Five9CloudCredentials {
+    param (
+        [string]$DomainId,
+        [string]$AuthType
+    )
+    
+    $credFile = Join-Path $global:Five9CloudCredentialPath "$DomainId.$AuthType.cred"
+    
+    if (-not (Test-Path $credFile)) {
+        Write-Verbose "No saved credentials found at $credFile"
+        return $null
+    }
+    
+    try {
+        $credObject = Get-Content $credFile | ConvertFrom-Json
+        
+        # Convert encrypted strings back to SecureString
+        if ($credObject.Password) {
+            $credObject.Password = ConvertTo-SecureString $credObject.Password
+        }
+        if ($credObject.ClientSecret) {
+            $credObject.ClientSecret = ConvertTo-SecureString $credObject.ClientSecret
+        }
+        
+        Write-Verbose "Loaded credentials from $credFile"
+        return $credObject
+    }
+    catch {
+        Write-Warning "Failed to load credentials: $_"
+        return $null
+    }
+}
+
+function Remove-Five9CloudCredentials {
+    [CmdletBinding()]
+    param (
+        [string]$DomainId,
+        [ValidateSet('All', 'ApiAccessControl', 'CloudAuth')]
+        [string]$AuthType = 'All'
+    )
+    
+    if ($AuthType -eq 'All') {
+        $files = Get-ChildItem -Path $global:Five9CloudCredentialPath -Filter "$DomainId.*.cred" -ErrorAction SilentlyContinue
+    }
+    else {
+        $files = Get-ChildItem -Path $global:Five9CloudCredentialPath -Filter "$DomainId.$AuthType.cred" -ErrorAction SilentlyContinue
+    }
+    
+    if (-not $files) {
+        Write-Warning "No saved credentials found for Domain: $DomainId"
+        return
+    }
+    
+    foreach ($file in $files) {
+        try {
+            Remove-Item $file.FullName -Force
+            Write-Host "Removed saved credentials: $($file.Name)" -ForegroundColor Gray
+        }
+        catch {
+            Write-Warning "Failed to remove $($file.Name): $_"
+        }
+    }
+}
+
+function Convert-SecureStringToPlainText {
+    param (
+        [SecureString]$SecureString
+    )
+    
+    if (-not $SecureString) {
+        return $null
+    }
+    
+    try {
+        $netCred = New-Object System.Net.NetworkCredential("", $SecureString)
+        return $netCred.Password
+    }
+    catch {
+        Write-Error "Failed to convert secure string: $_"
+        return $null
     }
 }

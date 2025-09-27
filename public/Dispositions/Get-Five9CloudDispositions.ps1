@@ -1,4 +1,4 @@
-﻿function Get-Five9CloudOutboundCampaigns {
+﻿function Get-Five9CloudDispositions {
     [CmdletBinding()]
     param (
         [string]$Fields,
@@ -12,7 +12,7 @@
     
     if (-not (Test-Five9CloudConnection -AuthType RestApi)) { return }
     
-    $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/campaigns/outbound_campaigns"
+    $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/dispositions"
     
     $queryParams = @{}
     if ($Fields) { $queryParams['fields'] = $Fields }
@@ -33,9 +33,10 @@
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{
-            Authorization = "$($Global:Five9CloudToken.RestApi.Authorization)"
+            Authorization = "$($global:Five9CloudToken.RestApi.Authorization)"
+            'Content-Type' = 'application/json'
         }
     } catch {
-        Write-Error "Failed to list outbound campaigns: $_"
+        Write-Error "Failed to list campaign dispositions: $_"
     }
 }
