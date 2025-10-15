@@ -32,7 +32,7 @@ function Connect-Five9Cloud {
         
         # Existing Authorization Parameter
         [Parameter(ParameterSetName = 'ExistingAuth')]
-        [switch]$ExistingAuthorization,
+        [bool]$ExistingAuthorization,
         
         [Parameter(ParameterSetName = 'ExistingAuth')]
         [ValidateSet('CloudAuth', 'ApiAccessControl')]
