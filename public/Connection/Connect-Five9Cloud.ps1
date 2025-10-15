@@ -31,7 +31,7 @@ function Connect-Five9Cloud {
         [string]$ClientId,
         
         [Parameter(ParameterSetName = 'ApiAccessControl', Mandatory = $true)]
-        [SecureString]$ClientSecret,
+        [string]$ClientSecret,
         
         [Parameter(ParameterSetName = 'ApiAccessControl')]
         [switch]$ApiAccessControl,
@@ -139,9 +139,9 @@ function Connect-Five9Cloud {
     # Prompt for missing credentials
     if ($authType -eq 'ApiAccessControl' -or $ApiAccessControl) {
         if (-not $ClientId) { $ClientId = Read-Host "Enter Client ID" }
-        if (-not $ClientSecret) { $ClientSecret = Read-Host "Enter Client Secret" -AsSecureString }
+        if (-not $ClientSecret) { $ClientSecret = Read-Host "Enter Client Secret" }
         
-        $result = Connect-ApiAccessControl -DomainId $DomainId -Region $Region `
+        $result = Connect-ApiAccessControl -DomainId $DomainId -Region $Region -Environment $Environment `
                                           -ClientId $ClientId -ClientSecret $ClientSecret
     }
     else {
@@ -192,21 +192,18 @@ function Connect-ApiAccessControl {
     param (
         [string]$DomainId,
         [string]$Region,
+        [string]$Environment,
         [string]$ClientId,
-        [SecureString]$ClientSecret
+        [string]$ClientSecret
     )
     
     try {
         $uri = "https://api.$Environment.$Region.five9.net/oauth2/v1/token"
         
-        # Convert secure string to plain text for the request
-        $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($ClientSecret)
-        $plainSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
-        
         $body = @{
             grant_type = "client_credentials"
             client_id = $ClientId
-            client_secret = $plainSecret
+            client_secret = $ClientSecret
             scope = "api"
         }
         
@@ -227,7 +224,7 @@ function Connect-ApiAccessControl {
         $global:Five9CloudToken.ActiveAuthType = 'ApiAccessControl'
         
         # Clear sensitive data
-        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
+        #[System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
         
         return $true
     }
@@ -358,7 +355,7 @@ function Save-Five9CloudCredentials {
         $credObject.ClientId = $ClientId
         if ($ClientSecret) {
             # Convert SecureString to encrypted string
-            $credObject.ClientSecret = ConvertFrom-SecureString $ClientSecret
+            $credObject.ClientSecret = $ClientSecret
         }
     }
     
