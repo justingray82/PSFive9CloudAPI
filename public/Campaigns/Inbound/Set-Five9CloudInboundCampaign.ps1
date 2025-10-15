@@ -129,7 +129,7 @@
         [string]$IfMatch = '*'
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AuthType RestApi)) { return }
     
     $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/campaigns/inbound_campaigns/$CampaignId"
     
