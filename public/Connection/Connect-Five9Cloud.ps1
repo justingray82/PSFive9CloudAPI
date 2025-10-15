@@ -331,7 +331,7 @@ function Save-Five9CloudCredentials {
         [string]$Username,
         [SecureString]$Password,
         [string]$ClientId,
-        [SecureString]$ClientSecret,
+        [string]$ClientSecret,
         [string]$Region
     )
     
