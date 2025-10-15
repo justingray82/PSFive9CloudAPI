@@ -7,8 +7,13 @@ function Connect-Five9Cloud {
         
         [Parameter(ParameterSetName = 'CloudAuth')]
         [Parameter(ParameterSetName = 'ApiAccessControl')]
-        [ValidateSet('US', 'UK', 'EU', 'CA')]
-        [string]$Region = 'US',
+        [ValidateSet('us', 'uk', 'eu', 'ca')]
+        [string]$Region = 'us',
+
+        [Parameter(ParameterSetName = 'CloudAuth')]
+        [Parameter(ParameterSetName = 'ApiAccessControl')]
+        [ValidateSet('prod', 'alpha')]
+        [string]$Environment = 'prod',
         
         # CloudAuth/REST API Parameters (Default)
         [Parameter(ParameterSetName = 'CloudAuth', Mandatory = $false)]
@@ -74,7 +79,7 @@ function Connect-Five9Cloud {
     $global:Five9CloudToken.Region = $Region
     
     # Set ApiBaseUrl based on region
-    $global:Five9CloudToken.ApiBaseUrl = "https://api.prod.$Region.five9.net"
+    $global:Five9CloudToken.ApiBaseUrl = "https://api.$Environment.$Region.five9.net"
     
     # RestBaseUrl is always static
     $global:Five9CloudToken.RestBaseUrl = "https://api.five9.com/restadmin/api"
