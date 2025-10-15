@@ -12,6 +12,7 @@ function Connect-Five9Cloud {
 
         [Parameter(ParameterSetName = 'CloudAuth')]
         [Parameter(ParameterSetName = 'ApiAccessControl')]
+        [Parameter(ParameterSetName = 'ExistingAuth')]
         [ValidateSet('prod', 'alpha')]
         [string]$Environment = 'prod',
         
@@ -129,7 +130,7 @@ function Connect-Five9Cloud {
                 if ($savedCreds.Region) {
                     $Region = $savedCreds.Region
                     $global:Five9CloudToken.Region = $Region
-                    $global:Five9CloudToken.ApiBaseUrl = "https://api.prod.$Region.five9.net"
+                    $global:Five9CloudToken.ApiBaseUrl = "https://api.$Environment.$Region.five9.net"
                 }
             }
         }
@@ -196,7 +197,7 @@ function Connect-ApiAccessControl {
     )
     
     try {
-        $uri = "https://api.prod.$Region.five9.net/oauth2/v1/token"
+        $uri = "https://api.$Environment.$Region.five9.net/oauth2/v1/token"
         
         # Convert secure string to plain text for the request
         $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($ClientSecret)
@@ -245,7 +246,7 @@ function Connect-CloudAuth {
     )
     
     try {
-        $uri = "https://api.prod.$Region.five9.net/cloudauthsvcs/v1/admin/login"
+        $uri = "https://api.$Environment.$Region.five9.net/cloudauthsvcs/v1/admin/login"
         
         $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
         $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
