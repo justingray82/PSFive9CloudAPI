@@ -48,13 +48,13 @@
         
     try {
         $packageLookup = Get-Five9CloudVerintSettings -UserUID "$($UserUID)"
-        $Packages = $packageLookup.packages | Where-Object { $_ -notin $Packages }
+        $filteredPackages = $packageLookup.packages.Where({ $_ -notin $Packages })
     } catch {
         Write-Verbose "Package not found with '$userUID'"
     }
 
     $body = @{
-        packages = $Packages
+        packages = $filteredPackages
     } | ConvertTo-Json
     
     try {
