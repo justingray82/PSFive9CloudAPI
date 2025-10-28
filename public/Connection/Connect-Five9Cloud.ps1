@@ -243,7 +243,7 @@ function Connect-CloudAuth {
     )
     
     try {
-        $uri = "https://api.$Environment.$Region.five9.net/cloudauthsvcs/v1/admin/login"
+        $uri = "https://api.prod.$Region.five9.net/cloudauthsvcs/v1/admin/login"
         
         $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
         $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)

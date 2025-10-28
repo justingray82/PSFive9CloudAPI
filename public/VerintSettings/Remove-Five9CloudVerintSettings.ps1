@@ -56,6 +56,7 @@
 
     $body = @{
         packages = $filteredPackages
+        screenRecordingLoginSettings = $packageLookup.screenRecordingLoginSettings
     } | ConvertTo-Json
     
     try {
