@@ -18,7 +18,7 @@
         [string[]]$Packages
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
 
     # If userName is provided, resolve it to userUID
     if ($PSCmdlet.ParameterSetName -eq 'ByName') {
@@ -48,7 +48,8 @@
         
     try {
         $packageLookup = Get-Five9CloudVerintSettings -UserUID "$($UserUID)"
-        $filteredPackages = $packageLookup.packages.Where({ $_ -notin $Packages })
+        #$filteredPackages = $packageLookup.packages.Where({ $_ -notin $Packages })
+        $filteredPackages = $packageLookup.packages | Where-Object { $Packages -notcontains $_ }
     } catch {
         Write-Verbose "Package not found with '$userUID'"
     }
