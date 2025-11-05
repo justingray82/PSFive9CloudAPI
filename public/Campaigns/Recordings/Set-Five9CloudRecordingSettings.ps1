@@ -5,7 +5,7 @@
         [bool]$CRMEnabled
     )
     
-    if (-not (Test-Five9CloudConnection -AuthType CloudAuth)) { return }
+    if (-not (Test-Five9CloudConnection -AuthType CloudAuth -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/recordings/v1/domains/$($global:Five9CloudToken.DomainId)/campaigns/$($CampaignId)/recording-settings"
     
