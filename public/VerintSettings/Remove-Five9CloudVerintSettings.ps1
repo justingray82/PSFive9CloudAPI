@@ -25,7 +25,7 @@
         Write-Verbose "Resolving user name '$userName' to userUID..."
         
         try {
-            $userLookup = Get-Five9CloudUser -Filter "username=='$($userName)'" -Fields "id,userUID"
+            $userLookup = Get-Five9CloudUserList -Filter "username=='$($userName)'" -Fields "id,userUID"
             if ($userLookup.resultsCount -gt 0) {
                 $UserUID = $userLookup.entities[0].userUID
                 Write-Verbose "Found user with ID: $userName"

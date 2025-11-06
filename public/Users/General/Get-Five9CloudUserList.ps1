@@ -1,7 +1,6 @@
-﻿function Get-Five9CloudUsers {
+﻿function Get-Five9CloudUserList {
     [CmdletBinding()]
     param (
-        [string]$Fields,
         [string]$Sort,
         [long]$Offset,
         [long]$Limit,
@@ -10,9 +9,9 @@
         [string]$Filter
     )
     
-    if (-not (Test-Five9CloudConnection -AuthType RestApi)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
-    $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/users"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users"
     
     $queryParams = @{}
     if ($Fields) { $queryParams['fields'] = $Fields }
@@ -33,7 +32,7 @@
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{
-            Authorization = "Basic $($global:Five9CloudToken.RestBasicAuth)"
+            Authorization = "Bearer $($global:Five9CloudToken.AccessToken)"
         }
     } catch {
         Write-Error "Failed to list users: $_"
