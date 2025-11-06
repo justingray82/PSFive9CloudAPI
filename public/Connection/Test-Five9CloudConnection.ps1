@@ -49,7 +49,7 @@
                         }
                         else {
                             if (-not $Silent) {
-                                Write-Warning "API Access Control token has expired"
+                                Write-Verbose "API Access Control token has expired"
                             }
                             
                             if ($AutoReconnect) {
@@ -69,7 +69,7 @@
                         }
                         else {
                             if (-not $Silent) {
-                                Write-Warning "CloudAuth token has expired"
+                                Write-Verbose "CloudAuth token has expired"
                             }
                             
                             if ($AutoReconnect) {
