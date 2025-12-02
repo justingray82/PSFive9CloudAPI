@@ -1,8 +1,9 @@
 ﻿function Set-Five9CloudSkill {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
-        [string]$SkillId,
+
+        [Parameter(Mandatory = $false)]
+        [string]$SkillName,
         
         [Parameter(Mandatory = $false)]
         [string]$Name,
@@ -21,11 +22,8 @@
         
         [Parameter(Mandatory = $false)]
         $Prompts,
-        
-        [Parameter(Mandatory = $false, ParameterSetName = 'ById')]
-        [string]$WhisperPromptId,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'ByName')]
+        [Parameter(Mandatory = $false)]
         [string]$WhisperPromptName,
         
         [Parameter(Mandatory = $false)]
@@ -39,6 +37,18 @@
     )
 
     if (-not (Test-Five9CloudConnection -AuthType RestApi)) { return }
+
+    Write-Verbose "Resolving skill name '$SkillName' to skill ID..."
+            
+    try {
+        $domainSkills = Get-Five9CloudSkills -Filter "name=='$($SkillName)'" -Fields "id,name"
+            if ($domainSkills.resultsCount -gt 0) {
+                $SkillId = $domainSkills.entities[0].id
+                Write-Verbose "Found skill with ID: $SkillId"
+                }
+        } catch {
+            Write-Verbose "No skill found with name '$SkillName'"
+        }    
     
     $uri = "$($global:Five9CloudToken.RestBaseUrl)/v1/domains/$($global:Five9CloudToken.DomainId)/skills/$skillId"
     
@@ -142,29 +152,20 @@
             }
             
             # Process WhisperPrompt
-            if ($PSBoundParameters.ContainsKey('WhisperPromptId') -or $PSBoundParameters.ContainsKey('WhisperPromptName')) {
+            if ($PSBoundParameters.ContainsKey('WhisperPromptName')) {
                 # If PromptName is provided, resolve it to PromptId
-                if ($PSCmdlet.ParameterSetName -eq 'ByName') {
-                    Write-Verbose "Resolving prompt name '$WhisperPromptName' to prompt ID..."
+                Write-Verbose "Resolving prompt name '$WhisperPromptName' to prompt ID..."
                     
-                    try {
-                        $domainPrompts = Get-Five9CloudPrompts -Filter "name=='$($WhisperPromptName)'" -Fields "id,name"
-                        if ($domainPrompts.resultsCount -gt 0) {
-                            $WhisperPromptId = $domainPrompts.entities[0].id
-                            Write-Verbose "Found prompt with ID: $WhisperPromptId"
-                        }
-                    } catch {
-                        Write-Verbose "No prompt found with name '$WhisperPromptName'"
+                try {
+                    $domainPrompts = Get-Five9CloudPrompts -Filter "name=='$($WhisperPromptName)'" -Fields "id,name"
+                    if ($domainPrompts.resultsCount -gt 0) {
+                        $WhisperPromptId = $domainPrompts.entities[0].id
+                        Write-Verbose "Found prompt with ID: $WhisperPromptId"
                     }
-                    
-                    # If still not found, throw error
-                    if (-not $WhisperPromptId) {
-                        Write-Error "Prompt with name '$WhisperPromptName' not found."
-                        return
-                    }
+                } catch {
+                    Write-Verbose "No prompt found with name '$WhisperPromptName'"
                 }
-
-
+ 
                 $body['whisperPrompt'] = @{ id = $WhisperPromptId }
             }
             
