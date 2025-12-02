@@ -26,6 +26,13 @@ Import-Module PSFive9CloudAPI -Force
 
 ## Usage
 
+### CloudAuth and NG REST Authentication (Basic)
+
+Connect using Username and Password. You'll be prompted to save credentials for future use:
+```powershell
+Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "password"
+```
+
 ### ApiControl Authentication (OAuth2)
 
 Connect using CustomerKey and SecretId. You'll be prompted to save credentials for future use:
@@ -33,19 +40,7 @@ Connect using CustomerKey and SecretId. You'll be prompted to save credentials f
 Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "ApiControl" -CustomerKey "CustomerKey12345" -SecretId "SecretId67890"
 ```
 
-### CloudAuth Authentication (Basic)
-
-Connect using Username and Password. You'll be prompted to save credentials for future use:
-```powershell
-Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "CloudAuth" -Username "user@domain.com" -Password "password"
-```
-
 ### Using Saved Credentials
-
-Use previously saved ApiControl credentials:
-```powershell
-Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true -AuthEndpoint "ApiControl"
-```
 
 If both credential types are saved, you'll be prompted to choose:
 ```powershell
@@ -56,7 +51,7 @@ Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true
 
 Specify a region other than US:
 ```powershell
-Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "ApiControl" -CustomerKey "YourKey" -SecretId "YourSecret" -Region "EU"
+Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "password" -Region "EU"
 ```
 
 ### Example Operations
