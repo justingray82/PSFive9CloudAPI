@@ -54,23 +54,6 @@ Specify a region other than US:
 Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "password" -Region "EU"
 ```
 
-### Example Operations
-
-After connecting, you can use various functions to manage your Five9 environment:
-```powershell
-# List all users
-Get-Five9CloudListUsers
-
-# Get a specific user
-Get-Five9CloudRetrieveUser -UserUID "user-12345"
-
-# List campaigns
-Get-Five9CloudListCampaigns
-
-# Start a campaign
-Start-Five9CloudCampaign -CampaignId "campaign-67890"
-```
-
 ## Requirements
 
 - PowerShell 5.1 or later
