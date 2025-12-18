@@ -15,7 +15,7 @@
     $profile_body = @{
         name = 'Aceyus OneVue API'
         type = 'BASIC'
-        description = 'API Test'
+        description = 'Aceyus OneVue API'
         basicType = @{
             userName = $authProfileUser
             password = $authProfilePassword
