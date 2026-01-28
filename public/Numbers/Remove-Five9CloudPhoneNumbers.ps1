@@ -14,7 +14,7 @@
         [string]$DefaultCountryCode = '+1'  # Default to US/Canada
     )
     
-    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
+    if (-not (Test-Five9CloudConnection -AuthType CloudAuth -AutoReconnect)) { return }
     
     # Initialize the phone numbers array
     $numbersArray = @()

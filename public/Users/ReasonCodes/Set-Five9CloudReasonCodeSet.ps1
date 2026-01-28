@@ -44,7 +44,7 @@
     }
             
     # If still not found, throw error
-    if (-not $UserID) {
+    if (-not $ReasonCodeSetID) {
         Write-Error "Reason code Set '$ReasonCodeSet' not found."
         return
     }
