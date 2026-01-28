@@ -1,4 +1,4 @@
-﻿function Get-Five9CloudUserReasonCodeSets {
+﻿function Get-Five9CloudUserReasonCodes {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ById')]
@@ -29,9 +29,7 @@
         }
     }
     
-    # Original: Get-Five9CloudVerintSettings
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/agent-sessions/v1/domains/$($global:Five9CloudToken.DomainId)/users/$($UserUID)/reason-code-sets"
-    Write-Host $uri
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/agent-sessions/v1/domains/$($global:Five9CloudToken.DomainId)/users/$($UserUID)/reason-codes"
     
     try {
         Invoke-RestMethod -Uri $uri -Method Get -Headers @{
@@ -39,7 +37,6 @@
             'Content-Type' = 'application/json'
         }
     } catch {
-        # Handle 404 specifically - this means no Verint settings exist for the user
         if ($_.Exception.Response.StatusCode -eq 404) {
             Write-Host "No Reason Codes settings found for user $UserUID"
         } else {
