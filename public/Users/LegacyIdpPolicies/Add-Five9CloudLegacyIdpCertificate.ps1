@@ -10,7 +10,7 @@ function Add-Five9CloudLegacyIdpCertificate {
         [Parameter(Mandatory = $true)][string]$Certificate
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/legacy-idp-policies/$IdpPolicyId/certificates"
     

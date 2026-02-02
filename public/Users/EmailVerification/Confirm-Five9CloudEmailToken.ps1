@@ -8,7 +8,7 @@ function Confirm-Five9CloudEmailToken {
         [Parameter(Mandatory = $true)][string]$Token
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/email-verification:verify"
     

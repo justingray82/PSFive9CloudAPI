@@ -36,7 +36,7 @@ function Get-Five9CloudIdpCertificate {
         [string[]]$Sort
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     # Build URI based on parameter set
     switch ($PSCmdlet.ParameterSetName) {

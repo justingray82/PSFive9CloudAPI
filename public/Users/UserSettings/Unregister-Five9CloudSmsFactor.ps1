@@ -9,7 +9,7 @@ function Unregister-Five9CloudSmsFactor {
         [Parameter(Mandatory = $true)][string]$EnrolledFactorId
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-factors/sms/$EnrolledFactorId:un-enroll"
     

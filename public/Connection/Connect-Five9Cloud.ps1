@@ -78,6 +78,7 @@ function Connect-Five9Cloud {
     # Store domain and region
     $global:Five9CloudToken.DomainId = $DomainId
     $global:Five9CloudToken.Region = $Region
+    $global:Five9CloudToken.Environment = $Environment
     
     # Set ApiBaseUrl based on region
     $global:Five9CloudToken.ApiBaseUrl = "https://api.$Environment.$Region.five9.net"
@@ -151,7 +152,7 @@ function Connect-Five9Cloud {
         
         $SecurePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
         $result = Connect-CloudAuth -DomainId $DomainId -Region $Region `
-                                   -Username $Username -Password $SecurePassword
+                                   -Username $Username -Password $SecurePassword -Environment $Environment
         
         # Also connect to REST API unless CloudAuthOnly is specified
         if ($result -and -not $CloudAuthOnly) {
@@ -172,7 +173,7 @@ function Connect-Five9Cloud {
             Save-Five9CloudCredentials -DomainId $DomainId -AuthType $credType `
                                       -Username $Username -Password $SecurePassword `
                                       -ClientId $ClientId -ClientSecret $ClientSecret `
-                                      -Region $Region
+                                      -Region $Region -Environment $Environment
         }
     }
     
@@ -238,12 +239,13 @@ function Connect-CloudAuth {
     param (
         [string]$DomainId,
         [string]$Region,
+        [string]$Environment,
         [string]$Username,
         [SecureString]$Password
     )
     
     try {
-        $uri = "https://api.prod.$Region.five9.net/cloudauthsvcs/v1/admin/login"
+        $uri = "https://api.$Environment.$Region.five9.net/cloudauthsvcs/v1/admin/login"
         
         $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
         $plainPassword = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
@@ -332,7 +334,8 @@ function Save-Five9CloudCredentials {
         [SecureString]$Password,
         [string]$ClientId,
         [string]$ClientSecret,
-        [string]$Region
+        [string]$Region,
+        [string]$Environment
     )
     
     $credFile = Join-Path $global:Five9CloudCredentialPath "$DomainId.$AuthType.cred"

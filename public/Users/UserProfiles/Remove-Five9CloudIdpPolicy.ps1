@@ -9,7 +9,7 @@ function Remove-Five9CloudIdpPolicy {
         [Parameter(Mandatory = $true)][string]$IdpPolicyId
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/idp-policies/$IdpPolicyId"
     

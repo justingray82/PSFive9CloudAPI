@@ -11,7 +11,7 @@ function Set-Five9CloudDomainMigration {
         [bool]$Enable
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     # Determine the action based on Enable parameter
     $action = if ($Enable) { ':enable' } else { ':disable' }

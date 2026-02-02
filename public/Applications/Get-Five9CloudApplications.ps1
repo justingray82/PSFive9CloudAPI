@@ -1,4 +1,4 @@
-﻿function Get-Five9CloudPermissionSets {
+﻿function Get-Five9CloudApplications {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
@@ -13,7 +13,7 @@
     
     if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/applications"
     
     # Build query parameters if provided
     $queryParams = @()
@@ -32,11 +32,9 @@
         }
     } catch {
         if ($_.Exception.Response.StatusCode -eq 404) {
-            Write-Host "No Permissions found for domain $($global:Five9CloudToken.DomainId)"
+            Write-Host "No Applications found for domain $($global:Five9CloudToken.DomainId)"
         } else {
-            Write-Error "Failed to get Permissions: $_"
+            Write-Error "Failed to get Applications: $_"
         }
     }
 }
-
-$sets = Get-Five9CloudPermissionSets

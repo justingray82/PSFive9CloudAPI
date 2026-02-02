@@ -10,7 +10,7 @@ function Enable-Five9CloudEmailFactor {
         [string]$PassCode
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/my-factors/email/$EnrolledFactorId:activate"
     

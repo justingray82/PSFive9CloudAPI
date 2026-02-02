@@ -10,7 +10,7 @@ function Get-Five9CloudTrustedRange {
         [string]$DomainId = $global:Five9CloudToken.DomainId
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     # Original: Get-Five9CloudTrustedRanges
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/trusted-ip-ranges"

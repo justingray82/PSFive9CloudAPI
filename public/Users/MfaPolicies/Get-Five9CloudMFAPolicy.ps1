@@ -10,7 +10,7 @@ function Get-Five9CloudMFAPolicy {
         [string]$DomainId = $global:Five9CloudToken.DomainId
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     # Original: Get-Five9CloudMFAPolicy
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/mfa/policy"

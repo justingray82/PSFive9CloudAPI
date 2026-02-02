@@ -9,7 +9,7 @@ function Remove-Five9CloudPermissionFromUserProfile {
         [Parameter(Mandatory = $true)][string]$Permission
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/user-profiles/$UserProfileId/permissions/$Permission"
     

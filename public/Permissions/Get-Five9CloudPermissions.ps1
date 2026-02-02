@@ -1,4 +1,4 @@
-﻿function Get-Five9CloudPermissionSets {
+﻿function Get-Five9CloudPermissions {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]
@@ -13,7 +13,7 @@
     
     if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
-    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/roles"
+    $uri = "$($global:Five9CloudToken.ApiBaseUrl)/acl/v1/domains/$($global:Five9CloudToken.DomainId)/permissions"
     
     # Build query parameters if provided
     $queryParams = @()
@@ -38,5 +38,3 @@
         }
     }
 }
-
-$sets = Get-Five9CloudPermissionSets

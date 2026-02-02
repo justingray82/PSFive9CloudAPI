@@ -9,7 +9,7 @@ function Add-Five9CloudTagToUser {
         [Parameter(Mandatory = $true)][string]$TagId
     )
     
-    if (-not (Test-Five9CloudConnection)) { return }
+    if (-not (Test-Five9CloudConnection -AutoReconnect)) { return }
     
     $uri = "$($global:Five9CloudToken.ApiBaseUrl)/users/v1/domains/$($global:Five9CloudToken.DomainId)/users/$UserUID/tags/$TagId"
     
