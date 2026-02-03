@@ -143,7 +143,8 @@ function Reconnect-Five9Cloud {
             $cloudAuthResult = Connect-CloudAuth -DomainId $domainId `
                                                 -Region $savedCreds.Region `
                                                 -Username $savedCreds.Username `
-                                                -Password $savedCreds.Password
+                                                -Password $savedCreds.Password `
+                                                -Environment $global:Five9CloudToken.Environment
             
             # Also reconnect REST API if it was previously connected
             if ($cloudAuthResult -and $global:Five9CloudToken.RestApi) {
