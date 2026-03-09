@@ -3,6 +3,6 @@
    $splat = @{ Uri = $Uri; Method = $Method; Headers = (Get-Five9CloudAuthHeader) }
    if ($Body) { $splat.Body = ($Body | ConvertTo-Json -Depth 10) }
    try { Invoke-RestMethod @splat }
-   catch { Write-Error "API call failed [$Method $Uri]: $_" }
+   catch { Write-Host "API call failed [$Method $Uri]: $_"; return $false }
    Start-Sleep -Milliseconds 250
 }

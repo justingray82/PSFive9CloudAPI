@@ -10,11 +10,10 @@
 
    Write-Verbose "Token expired — reconnecting..."
    $p = $global:Five9.AuthParams
-   $ok = if ($global:Five9.AuthType -eq 'OAuth') {
-       Invoke-Five9CloudOAuth $p.Base $p.ClientId $p.ClientSecret
+   if ($global:Five9.AuthType -eq 'OAuth') {
+       $ok = Invoke-Five9CloudOAuth $p.Base $p.ClientId $p.ClientSecret
    } else {
-       Invoke-Five9CloudAuth $p.Base $p.Username $p.Password
+       $ok = Invoke-Five9CloudAuth $p.Base $p.Username $p.Password
    }
-   if (-not $ok) { Write-Error "Auto-reconnect failed." }
-   return $ok
+   if ($ok -ne $false) { Write-Error "Auto-reconnect failed."; return $false }
 }

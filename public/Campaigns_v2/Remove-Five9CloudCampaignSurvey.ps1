@@ -1,6 +1,6 @@
 ﻿function Remove-Five9CloudCampaignSurvey {
     param([string]$CampaignId, [string]$CampaignName)
-    $campaignId = Resolve-Five9CloudCampaignId $CampaignId $CampaignName; if (-not $campaignId) { return }
+    if (-not $campaignId) { $campaignId = Resolve-Five9CloudCampaignId $CampaignId $CampaignName } ; if (-not $campaignId) { return }
     $campaignDetails = Get-Five9CloudCampaigns -Filter "campaignId=='$campaignId'"
     $newDetails = $campaignDetails.items[0]
     $newDetails.PSObject.Properties.Remove('survey')
