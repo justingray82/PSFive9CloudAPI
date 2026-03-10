@@ -6,17 +6,10 @@ A PowerShell module designed to simplify interacting with the Five9 Cloud APIs. 
 
 - Easy-to-use PowerShell functions for common Five9 API tasks
 - Supports multiple authentication methods:
-  - **ApiControl**: OAuth2 authentication with CustomerKey/SecretId
+  - **ApiControl**: OAuth2 authentication with Client ID/Client Secret
   - **CloudAuth**: Basic authentication with Username/Password
   - **NGRest**: Basic authentication with Username/Password
-- Automatic credential management with secure storage
 - Compatible with multiple regions: US, CA, EU, IN, UK
-- Comprehensive coverage of Five9 Cloud APIs:
-  - User Management
-  - Access Control (ACL)
-  - Campaign Management (Inbound/Outbound)
-  - IDP Policies and Migration
-  - MFA and Security Settings
 
 ## Quick Installation
 ```powershell
@@ -35,16 +28,9 @@ Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "pass
 
 ### ApiControl Authentication (OAuth2)
 
-Connect using CustomerKey and SecretId. You'll be prompted to save credentials for future use:
+Connect using ClientID and ClientSecret. You'll be prompted to save credentials for future use:
 ```powershell
-Connect-Five9Cloud -DomainId "12345" -AuthEndpoint "ApiControl" -CustomerKey "CustomerKey12345" -SecretId "SecretId67890"
-```
-
-### Using Saved Credentials
-
-If both credential types are saved, you'll be prompted to choose:
-```powershell
-Connect-Five9Cloud -DomainId "12345" -ExistingAuthorization $true
+Connect-Five9Cloud -DomainId "12345" -ClientID "ClientID12345" -ClientSecret "Secret67890"
 ```
 
 ### Regional Support
@@ -59,13 +45,7 @@ Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "pass
 - PowerShell 5.1 or later
 - API access to Five9 with valid credentials
 - Network access to Five9 Cloud API endpoints
-
-## Credential Storage
-
-Credentials are securely stored using PowerShell's encryption capabilities:
-- Location: `$env:USERPROFILE\.five9\credentials.json`
-- Passwords are encrypted using Windows Data Protection API (DPAPI)
-- Credentials are tied to your user account and machine
+- Admin Console Application Access
 
 ## Disclaimer
 
