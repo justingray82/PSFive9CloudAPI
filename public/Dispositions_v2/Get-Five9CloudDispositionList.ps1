@@ -1,4 +1,4 @@
-﻿function Get-Five9CloudCampaignList {
+﻿function Get-Five9CloudDispositionList {
     param([string]$Fields, [string]$Sort, [long]$Offset, [long]$Limit,
           [string]$PageCursor, [int]$PageLimit = 100, [string]$Filter)
 
@@ -11,5 +11,5 @@
     if ($PageLimit)  { $q.pageLimit  = $PageLimit }
     if ($Filter)     { $q.filter     = $Filter }
 
-    Invoke-Five9CloudPagedApi (Set-Five9CloudQueryUri "campaigns/v1/domains/$($global:Five9.DomainId)/campaigns" $q)
+    Invoke-Five9CloudPagedApi (Set-Five9CloudQueryUri "interactions/v1/domains/$($global:Five9.DomainId)/dispositions" $q)
 }
