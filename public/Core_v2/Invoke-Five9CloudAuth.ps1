@@ -5,6 +5,6 @@
            -Headers @{ Authorization = "Basic $encoded"; 'Content-Type' = 'application/json' } `
            -Body '{"grant_type":"client_credentials"}'
        Set-Five9CloudToken $r
-       Write-Verbose "Connected to domain $($global:Five9.DomainId)"
+       Write-Verbose "Connected to domain $($global:Five9.DomainId)"; return $true
    } catch { Write-Error "CloudAuth failed: $_"; return $false }
 }

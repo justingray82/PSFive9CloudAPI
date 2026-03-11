@@ -1,4 +1,4 @@
-﻿function Get-Five9CloudCampaigns {
+﻿function Get-Five9CloudCampaignList {
     param([string]$Fields, [string]$Sort, [long]$Offset, [long]$Limit,
           [string]$PageCursor, [int]$PageLimit = 1000, [string]$Filter)
 
