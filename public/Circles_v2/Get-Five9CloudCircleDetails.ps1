@@ -13,5 +13,3 @@
 
    Invoke-Five9CloudPagedApi (Set-Five9CloudQueryUri "circles/v1/domains/$($global:Five9.DomainId)/circles" $q)
 }
-
-$circles = Get-Five9CloudCircleDetails
