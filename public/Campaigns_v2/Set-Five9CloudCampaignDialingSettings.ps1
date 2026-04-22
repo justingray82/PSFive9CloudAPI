@@ -218,3 +218,5 @@ function Set-Five9CloudCampaignDialingSettings {
     $result = Invoke-Five9CloudApi "$($global:Five9.ApiBaseUrl)/dialer/v1/domains/$($global:Five9.DomainId)/campaigns/$CampaignId/dialing-settings" -Method Put -Body $body
     if ($result -ne $false) { Write-Host "Dialing settings updated for campaign '$CampaignName'."; return $result } else { Write-Host "Failed to update dialing settings for campaign '$CampaignName'."; return $false }
 }
+
+Set-Five9CloudCampaignDialingSettings -CampaignName "A Generic Outbound Campaign" -Predictive -CallAnalysisMode faxAndAnsweringMachine -ListDialingMode listPenetration
