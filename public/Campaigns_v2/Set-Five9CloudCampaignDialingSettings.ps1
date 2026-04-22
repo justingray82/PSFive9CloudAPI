@@ -4,57 +4,57 @@ function Set-Five9CloudCampaignDialingSettings {
         [string]$CampaignId,
         [string]$CampaignName,
 
-        # ── Mode selectors ──────────────────────────────────────────────────────
+        #  Mode selectors 
         [Parameter(Mandatory, ParameterSetName = 'Predictive')][switch]$Predictive,
         [Parameter(Mandatory, ParameterSetName = 'Progressive')][switch]$Progressive,
         [Parameter(Mandatory, ParameterSetName = 'Power')][switch]$Power,
         [Parameter(Mandatory, ParameterSetName = 'Preview')][switch]$Preview,
         [Parameter(Mandatory, ParameterSetName = 'Auto')][switch]$Auto,
 
-        # ── Base settings  (Predictive / Progressive / Power) ──────────────────
+        #  Base settings  (Predictive / Progressive / Power) 
         [Parameter(Mandatory, ParameterSetName = 'Predictive')]
         [Parameter(Mandatory, ParameterSetName = 'Progressive')]
         [Parameter(Mandatory, ParameterSetName = 'Power')]
         [ValidateSet('listPenetration','verticalDialing','extendedStrategy')]
-        [string]$ListDialingMode,
+        [string]$ListDialingMode = 'listPenetration',
 
         [Parameter(Mandatory, ParameterSetName = 'Predictive')]
         [Parameter(Mandatory, ParameterSetName = 'Progressive')]
         [Parameter(Mandatory, ParameterSetName = 'Power')]
-        [string]$MinDurationBeforeRedialing,
+        [string]$MinDurationBeforeRedialing = 'PT8H',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
         [Parameter(ParameterSetName = 'Power')]
-        [ValidateRange(1,99)][int]$DialingPriority,
+        [ValidateRange(1,99)][int]$DialingPriority = '3',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
         [Parameter(ParameterSetName = 'Power')]
-        [ValidateRange(1,99)][int]$DialingRatio,
+        [ValidateRange(1,99)][int]$DialingRatio = '50',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
         [Parameter(ParameterSetName = 'Power')]
-        [ValidateRange(0.0,10.0)][float]$MaxAbandonCallPercentage,
+        [ValidateRange(0.0,10.0)][float]$MaxAbandonCallPercentage = 3.0,
 
         # Call Analysis
         [Parameter(Mandatory, ParameterSetName = 'Predictive')]
         [Parameter(Mandatory, ParameterSetName = 'Progressive')]
         [Parameter(Mandatory, ParameterSetName = 'Power')]
         [ValidateSet('noAnalysis','faxOnly','faxAndAnsweringMachine')]
-        [string]$CallAnalysisMode,
+        [string]$CallAnalysisMode = 'faxAndAnsweringMachine',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
         [Parameter(ParameterSetName = 'Power')]
-        [ValidateRange(20,100)][int]$AmdVoiceDetectionLevel,
+        [ValidateRange(20,100)][int]$AmdVoiceDetectionLevel = '20',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
         [Parameter(ParameterSetName = 'Power')]
         [ValidateSet('dropCall','playPrompt','startScript')]
-        [string]$AmdActionType,
+        [string]$AmdActionType = 'dropCall',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
@@ -76,7 +76,7 @@ function Set-Five9CloudCampaignDialingSettings {
         [Parameter(Mandatory, ParameterSetName = 'Progressive')]
         [Parameter(Mandatory, ParameterSetName = 'Power')]
         [ValidateSet('abandonCall','playPrompt','startScript')]
-        [string]$QueueExpirationActionType,
+        [string]$QueueExpirationActionType = 'abandonCall',
 
         [Parameter(ParameterSetName = 'Predictive')]
         [Parameter(ParameterSetName = 'Progressive')]
@@ -88,44 +88,44 @@ function Set-Five9CloudCampaignDialingSettings {
         [Parameter(ParameterSetName = 'Power')]
         [string]$QueueExpirationStartScriptId,
 
-        # ── Power-only ──────────────────────────────────────────────────────────
+        #  Power-only 
         [Parameter(ParameterSetName = 'Power')]
-        [ValidateRange(0.0,10.0)][float]$CallToAgentRatio,
+        [ValidateRange(0.0,10.0)][float]$CallToAgentRatio = 1.0,
 
-        # ── Preview ─────────────────────────────────────────────────────────────
-        [Parameter(Mandatory, ParameterSetName = 'Preview')][bool]$ExtendedStrategy,
-        [Parameter(Mandatory, ParameterSetName = 'Preview')][string]$PreviewMinDurationBeforeRedialing,
-
-        [Parameter(ParameterSetName = 'Preview')]
-        [ValidateRange(1,99)][int]$PreviewDialingPriority,
+        #  Preview 
+        [Parameter(Mandatory, ParameterSetName = 'Preview')][bool]$ExtendedStrategy = $false,
+        [Parameter(Mandatory, ParameterSetName = 'Preview')][string]$PreviewMinDurationBeforeRedialing = 'PT8H',
 
         [Parameter(ParameterSetName = 'Preview')]
-        [ValidateRange(1,99)][int]$PreviewDialingRatio,
+        [ValidateRange(1,99)][int]$PreviewDialingPriority = 3,
+
+        [Parameter(ParameterSetName = 'Preview')]
+        [ValidateRange(1,99)][int]$PreviewDialingRatio = 50,
 
         [Parameter(Mandatory, ParameterSetName = 'Preview')]
         [ValidateSet('unlimited','limited','dialImmediately')]
-        [string]$PreviewOptionsType,
+        [string]$PreviewOptionsType = 'limited',
 
         [Parameter(ParameterSetName = 'Preview')]
         [ValidateSet('dial','switchToAgent')]
-        [string]$LimitedPreviewActionType,
+        [string]$LimitedPreviewActionType = 'switchToAgent',
 
         [Parameter(ParameterSetName = 'Preview')]
-        [string]$LimitedPreviewMaxTime,
+        [string]$LimitedPreviewMaxTime = 'PT2M',
 
         [Parameter(ParameterSetName = 'Preview')][bool]$InterruptCalls,
         [Parameter(ParameterSetName = 'Preview')][bool]$InterruptSkillVoicemails,
 
-        # ── Auto ────────────────────────────────────────────────────────────────
+        #  Auto 
         [Parameter(Mandatory, ParameterSetName = 'Auto')]
         [ValidateSet('listPenetration','verticalDialing','extendedStrategy')]
-        [string]$AutoListDialingMode,
+        [string]$AutoListDialingMode = 'listPenetration',
 
         [Parameter(Mandatory, ParameterSetName = 'Auto')]
-        [string]$AutoMinDurationBeforeRedialing,
+        [string]$AutoMinDurationBeforeRedialing = 'PT8H',
 
         [Parameter(Mandatory, ParameterSetName = 'Auto')]
-        [ValidateRange(20,100)][int]$VoiceDetectionLevel
+        [ValidateRange(20,100)][int]$VoiceDetectionLevel = 20
     )
 
     if (-not $CampaignId) { $CampaignId = Resolve-Five9CloudCampaignId $CampaignId $CampaignName } ; if (-not $CampaignId) { return }
