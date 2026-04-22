@@ -1,6 +1,6 @@
 @{
     RootModule = 'PSFive9CloudAPI.psm1'
-    ModuleVersion = '2.0.6'
+    ModuleVersion = '2.0.6.1'
     GUID = 'cb68e400-6fdb-46ce-9010-87e7381e196a'
     Author = 'Justin Gray'
     Description = 'PowerShell module for interacting with Five9 Cloud APIs'
