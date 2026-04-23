@@ -3,7 +3,6 @@
     param(
         [ValidateSet('us','uk','eu','ca')][string]$Region = 'us',
         [ValidateSet('prod','alpha')][string]$Environment = 'prod',
-        [string]$DomainId,
 
         [Parameter(ParameterSetName = 'CloudAuth')][string]$Username,
         [Parameter(ParameterSetName = 'CloudAuth')][string]$Password,
@@ -24,11 +23,27 @@
             $localVer  = (Get-Module PSFive9CloudAPI -ErrorAction SilentlyContinue).Version.ToString()
 
             if ($remoteVer -and $localVer -and ([version]$remoteVer -gt [version]$localVer)) {
-                Write-Verbose "Update available: v$localVer -> v$remoteVer. Starting background install..."
-                Start-Job -Name 'PSFive9Update' -ScriptBlock {
-                    Invoke-Expression (Invoke-RestMethod 'https://raw.githubusercontent.com/justingray82/PSFive9CloudAPI/main/Install-PSFive9CloudAPI.ps1')
-                } | Out-Null
-                Write-Warning "PSFive9CloudAPI v$remoteVer installed in background. Run 'Import-Module PSFive9CloudAPI -Force' to activate."
+                Write-Verbose "Update available: v$localVer -> v$remoteVer. Downloading..."
+
+                $modulePath = (Get-Module PSFive9CloudAPI -ErrorAction SilentlyContinue).ModuleBase
+                if ($modulePath) {
+                    $zipUrl  = 'https://github.com/justingray82/PSFive9CloudAPI/archive/refs/heads/main.zip'
+                    $tempZip = "$env:TEMP\PSFive9CloudAPI_update.zip"
+                    $tempDir = "$env:TEMP\PSFive9CloudAPI_update"
+
+                    Invoke-WebRequest -Uri $zipUrl -OutFile $tempZip -UseBasicParsing -ErrorAction Stop
+                    if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+                    Expand-Archive -Path $tempZip -DestinationPath $tempDir -Force
+                    Remove-Item $tempZip -Force
+
+                    Get-ChildItem "$tempDir\PSFive9CloudAPI-main" -Include '*.ps1','*.psm1','*.psd1' -Recurse |
+                        ForEach-Object { Copy-Item $_.FullName -Destination $modulePath -Force }
+
+                    Remove-Item $tempDir -Recurse -Force
+                    $script:_Five9NeedsReimport = $true
+                    $script:_Five9RemoteVer     = $remoteVer
+                    Write-Verbose "Files updated. Will reimport after connecting."
+                }
             } else {
                 Write-Verbose "PSFive9CloudAPI is current (v$localVer)."
             }
@@ -38,13 +53,15 @@
     }
     # ──────────────────────────────────────────────────────────────────────────
 
+    # ── Initialise global state ────────────────────────────────────────────────
     $global:Five9 = @{ AccessToken = $null; ExpiresAt = $null; DomainId = $null; ApiBaseUrl = $null; AuthType = $null; AuthParams = @{} }
 
     $base = "https://api.$Environment.$Region.five9.net"
     $global:Five9.ApiBaseUrl = $base
     $global:Five9.AuthType   = $PSCmdlet.ParameterSetName
+    # ──────────────────────────────────────────────────────────────────────────
 
-    # ── Authenticate ──────────────────────────────────────────────────────────
+    # ── Authenticate ───────────────────────────────────────────────────────────
     if ($PSCmdlet.ParameterSetName -eq 'OAuth') {
         $global:Five9.AuthParams = @{ ClientId = $ClientId; ClientSecret = $ClientSecret; Base = $base }
         $ok = Invoke-Five9OAuth $base $ClientId $ClientSecret
@@ -54,10 +71,10 @@
         $global:Five9.AuthParams = @{ Username = $Username; Password = $Password; Base = $base }
         $ok = Invoke-Five9CloudAuth $base $Username $Password
     }
-    if ($ok -eq $false) { return }
+    if ($ok -eq $false) { $global:Five9 = @{}; return }
     # ──────────────────────────────────────────────────────────────────────────
 
-    # ── Discover DomainId via whoami ──────────────────────────────────────────
+    # ── Resolve DomainId via whoami ────────────────────────────────────────────
     try {
         Write-Verbose "Resolving domain ID via whoami..."
         $whoami = Invoke-RestMethod -Uri "$base/users/v1/users/whoami" `
@@ -69,6 +86,15 @@
         Write-Error "Authentication succeeded but failed to resolve domain ID: $_"
         $global:Five9 = @{}
         return
+    }
+    # ──────────────────────────────────────────────────────────────────────────
+
+    # ── Reimport if updated ────────────────────────────────────────────────────
+    if ($script:_Five9NeedsReimport) {
+        $script:_Five9NeedsReimport = $false
+        Write-Verbose "Reimporting updated module..."
+        Import-Module PSFive9CloudAPI -Force -Global
+        Write-Verbose "PSFive9CloudAPI updated to v$($script:_Five9RemoteVer) and active."
     }
     # ──────────────────────────────────────────────────────────────────────────
 }
