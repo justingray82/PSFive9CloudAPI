@@ -9,6 +9,7 @@
 
         [Parameter(ParameterSetName = 'OAuth', Mandatory)][string]$ClientId,
         [Parameter(ParameterSetName = 'OAuth', Mandatory)][string]$ClientSecret,
+        [string]$DomainId,
 
         [switch]$SkipUpdateCheck
     )
