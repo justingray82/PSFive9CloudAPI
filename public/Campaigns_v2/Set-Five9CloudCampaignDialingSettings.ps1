@@ -1,4 +1,4 @@
-function Set-Five9CloudCampaignDialingSettings {
+﻿function Set-Five9CloudCampaignDialingSettings {
     [CmdletBinding(DefaultParameterSetName = 'Predictive')]
     param(
         [string]$CampaignId,
@@ -103,7 +103,7 @@ function Set-Five9CloudCampaignDialingSettings {
         [string]$PreviewOptionsType,
 
         [Parameter(ParameterSetName = 'Preview')]
-        [ValidateSet('dial','switchToAgent')]
+        [ValidateSet('dial','switchAgentToNotReady')]
         [string]$LimitedPreviewActionType,
 
         [Parameter(ParameterSetName = 'Preview')][string]$LimitedPreviewMaxTime,
@@ -121,125 +121,150 @@ function Set-Five9CloudCampaignDialingSettings {
 
     if (-not $CampaignId) { $CampaignId = Resolve-Five9CloudCampaignId $CampaignId $CampaignName } ; if (-not $CampaignId) { return }
 
-    # Seed current values — only used when the mode matches so we don't carry over
-    # settings from a different mode into the new one
-    $mode     = $PSCmdlet.ParameterSetName.ToLower()
-    $defaults = Resolve-Five9CloudCampaignDialingSettings -CampaignId $CampaignId
-    $d        = if ($defaults -and $defaults.DialingMode -eq $mode) { $defaults } else { $null }
+    # GET current settings — this is the base we patch into
+    $raw = Get-Five9CloudCampaignDialingSettings -CampaignId $CampaignId
+    if (-not $raw -or $raw -is [bool]) { Write-Host "Failed to retrieve current dialing settings for campaign '$CampaignName'."; return $false }
 
-    $body = @{ dialingMode = $mode }
+    $mode = $PSCmdlet.ParameterSetName.ToLower()
 
+    # Extract the current mode sub-object using explicit property names.
+    # When the campaign is in a different mode, $curr will be $null and we fall back
+    # to a default object that has the full nested structure needed for property assignment.
+    $curr = switch ($mode) {
+        'predictive'  { $raw.predictive }
+        'progressive' { $raw.progressive }
+        'power'       { $raw.power }
+        'preview'     { $raw.preview }
+        'auto'        { $raw.auto }
+    }
+
+    if (-not $curr) {
+        Write-Host "Campaign is currently in '$($raw.dialingMode)' mode — switching to '$mode'. Only explicitly provided parameters will be set; all other fields will use system defaults."
+
+        $curr = switch ($mode) {
+            'auto' {
+                [PSCustomObject]@{
+                    listDialingMode            = 'listPenetration'
+                    minDurationBeforeRedialing = 'PT8H'
+                    voiceDetectionLevel        = 20
+                }
+            }
+            'preview' {
+                [PSCustomObject]@{
+                    extendedStrategy           = $false
+                    minDurationBeforeRedialing = 'PT8H'
+                    previewOptions             = [PSCustomObject]@{
+                        optionType = 'limited'
+                        limited    = [PSCustomObject]@{
+                            actionType     = 'switchAgentToNotReady'
+                            maxPreviewTime = 'PT2M'
+                        }
+                    }
+                }
+            }
+            default {
+                # predictive / progressive / power — full nested structure required
+                $obj = [PSCustomObject]@{
+                    listDialingMode            = 'listPenetration'
+                    minDurationBeforeRedialing = 'PT8H'
+                    dialingPriority            = 3
+                    dialingRatio               = 50
+                    maxAbandonCallPercentage   = 3.0
+                    callAnalysis               = [PSCustomObject]@{
+                        mode                 = 'faxAndAnsweringMachine'
+                        answeringMachineData = [PSCustomObject]@{
+                            voiceDetectionLevel = 20
+                            answerMachineAction = [PSCustomObject]@{
+                                actionType = 'dropCall'
+                                playPrompt = [PSCustomObject]@{}
+                            }
+                        }
+                    }
+                    queueExpirationAction      = [PSCustomObject]@{
+                        actionType = 'abandonCall'
+                    }
+                }
+                if ($mode -eq 'power') { $obj | Add-Member -MemberType NoteProperty -Name callToAgentRatio -Value 1.0 }
+                $obj
+            }
+        }
+    }
+
+    # Patch only the params that were explicitly provided — everything else stays as-is
     switch ($PSCmdlet.ParameterSetName) {
 
         'Auto' {
-            $body.auto = @{
-                listDialingMode            = if ($PSBoundParameters.ContainsKey('AutoListDialingMode'))            { $AutoListDialingMode }            elseif ($null -ne $d.AutoListDialingMode)            { $d.AutoListDialingMode }            else { 'listPenetration' }
-                minDurationBeforeRedialing = if ($PSBoundParameters.ContainsKey('AutoMinDurationBeforeRedialing')) { $AutoMinDurationBeforeRedialing } elseif ($null -ne $d.AutoMinDurationBeforeRedialing) { $d.AutoMinDurationBeforeRedialing } else { 'PT8H' }
-                voiceDetectionLevel        = if ($PSBoundParameters.ContainsKey('VoiceDetectionLevel'))            { $VoiceDetectionLevel }            elseif ($null -ne $d.VoiceDetectionLevel)            { $d.VoiceDetectionLevel }            else { 20 }
-            }
+            if ($PSBoundParameters.ContainsKey('AutoListDialingMode'))            { $curr.listDialingMode            = $AutoListDialingMode }
+            if ($PSBoundParameters.ContainsKey('AutoMinDurationBeforeRedialing')) { $curr.minDurationBeforeRedialing = $AutoMinDurationBeforeRedialing }
+            if ($PSBoundParameters.ContainsKey('VoiceDetectionLevel'))            { $curr.voiceDetectionLevel        = $VoiceDetectionLevel }
         }
 
         'Preview' {
-            $extStrat   = if ($PSBoundParameters.ContainsKey('ExtendedStrategy'))               { $ExtendedStrategy }               elseif ($null -ne $d.ExtendedStrategy)               { $d.ExtendedStrategy }               else { $false }
-            $minDur     = if ($PSBoundParameters.ContainsKey('PreviewMinDurationBeforeRedialing')) { $PreviewMinDurationBeforeRedialing } elseif ($null -ne $d.PreviewMinDurationBeforeRedialing) { $d.PreviewMinDurationBeforeRedialing } else { 'PT8H' }
-            $optionType = if ($PSBoundParameters.ContainsKey('PreviewOptionsType'))             { $PreviewOptionsType }             elseif ($null -ne $d.PreviewOptionsType)             { $d.PreviewOptionsType }             else { 'limited' }
-
-            $settings = @{
-                extendedStrategy           = $extStrat
-                minDurationBeforeRedialing = $minDur
-            }
-
-            $dp = if ($PSBoundParameters.ContainsKey('PreviewDialingPriority')) { $PreviewDialingPriority } else { $d.PreviewDialingPriority }
-            $dr = if ($PSBoundParameters.ContainsKey('PreviewDialingRatio'))    { $PreviewDialingRatio }    else { $d.PreviewDialingRatio }
-            if ($null -ne $dp) { $settings.dialingPriority = $dp }
-            if ($null -ne $dr) { $settings.dialingRatio    = $dr }
-
-            $previewOptions = @{ optionType = $optionType }
-            if ($optionType -eq 'limited') {
-                $limAction  = if ($PSBoundParameters.ContainsKey('LimitedPreviewActionType')) { $LimitedPreviewActionType } elseif ($null -ne $d.LimitedPreviewActionType) { $d.LimitedPreviewActionType } else { 'switchToAgent' }
-                $limMaxTime = if ($PSBoundParameters.ContainsKey('LimitedPreviewMaxTime'))    { $LimitedPreviewMaxTime }    elseif ($null -ne $d.LimitedPreviewMaxTime)    { $d.LimitedPreviewMaxTime }    else { 'PT2M' }
-                $previewOptions.limited = @{ actionType = $limAction; maxPreviewTime = $limMaxTime }
-            }
-            $settings.previewOptions = $previewOptions
-
-            if ($PSBoundParameters.ContainsKey('InterruptCalls') -or $PSBoundParameters.ContainsKey('InterruptSkillVoicemails') -or $null -ne $d.InterruptCalls) {
-                $settings.interruptOptions = @{
-                    calls           = if ($PSBoundParameters.ContainsKey('InterruptCalls'))           { $InterruptCalls }           elseif ($null -ne $d.InterruptCalls)           { $d.InterruptCalls }           else { $false }
-                    skillVoicemails = if ($PSBoundParameters.ContainsKey('InterruptSkillVoicemails')) { $InterruptSkillVoicemails } elseif ($null -ne $d.InterruptSkillVoicemails) { $d.InterruptSkillVoicemails } else { $false }
+            if ($PSBoundParameters.ContainsKey('ExtendedStrategy'))                  { $curr.extendedStrategy           = $ExtendedStrategy }
+            if ($PSBoundParameters.ContainsKey('PreviewMinDurationBeforeRedialing')) { $curr.minDurationBeforeRedialing = $PreviewMinDurationBeforeRedialing }
+            if ($PSBoundParameters.ContainsKey('PreviewDialingPriority'))            { $curr.dialingPriority            = $PreviewDialingPriority }
+            if ($PSBoundParameters.ContainsKey('PreviewDialingRatio'))               { $curr.dialingRatio               = $PreviewDialingRatio }
+            if ($PSBoundParameters.ContainsKey('PreviewOptionsType'))                { $curr.previewOptions.optionType  = $PreviewOptionsType }
+            if ($PSBoundParameters.ContainsKey('LimitedPreviewActionType'))          { $curr.previewOptions.limited.actionType     = $LimitedPreviewActionType }
+            if ($PSBoundParameters.ContainsKey('LimitedPreviewMaxTime'))             { $curr.previewOptions.limited.maxPreviewTime = $LimitedPreviewMaxTime }
+            if ($PSBoundParameters.ContainsKey('InterruptCalls') -or $PSBoundParameters.ContainsKey('InterruptSkillVoicemails')) {
+                if (-not $curr.interruptOptions) {
+                    $curr | Add-Member -MemberType NoteProperty -Name interruptOptions -Value ([PSCustomObject]@{ calls = $false; skillVoicemails = $false })
                 }
+                if ($PSBoundParameters.ContainsKey('InterruptCalls'))           { $curr.interruptOptions.calls           = $InterruptCalls }
+                if ($PSBoundParameters.ContainsKey('InterruptSkillVoicemails')) { $curr.interruptOptions.skillVoicemails = $InterruptSkillVoicemails }
             }
-            $body.preview = $settings
         }
 
         default {
-            # Predictive, Progressive, Power
-            # Required fields: explicit → current → hardcoded default
-            $listMode    = if ($PSBoundParameters.ContainsKey('ListDialingMode'))            { $ListDialingMode }            elseif ($null -ne $d.ListDialingMode)            { $d.ListDialingMode }            else { 'listPenetration' }
-            $minDur      = if ($PSBoundParameters.ContainsKey('MinDurationBeforeRedialing')) { $MinDurationBeforeRedialing } elseif ($null -ne $d.MinDurationBeforeRedialing) { $d.MinDurationBeforeRedialing } else { 'PT8H' }
-            $caMode      = if ($PSBoundParameters.ContainsKey('CallAnalysisMode'))           { $CallAnalysisMode }           elseif ($null -ne $d.CallAnalysisMode)           { $d.CallAnalysisMode }           else { 'faxAndAnsweringMachine' }
-            $queueType   = if ($PSBoundParameters.ContainsKey('QueueExpirationActionType'))  { $QueueExpirationActionType }  elseif ($null -ne $d.QueueExpirationActionType)  { $d.QueueExpirationActionType }  else { 'abandonCall' }
-
-            $settings = @{
-                listDialingMode            = $listMode
-                minDurationBeforeRedialing = $minDur
+            # Predictive, Progressive, Power — flat fields
+            if ($PSBoundParameters.ContainsKey('ListDialingMode'))            { $curr.listDialingMode            = $ListDialingMode }
+            if ($PSBoundParameters.ContainsKey('MinDurationBeforeRedialing')) { $curr.minDurationBeforeRedialing = $MinDurationBeforeRedialing }
+            if ($PSBoundParameters.ContainsKey('DialingPriority'))            { $curr.dialingPriority            = $DialingPriority }
+            if ($PSBoundParameters.ContainsKey('DialingRatio'))               { $curr.dialingRatio               = $DialingRatio }
+            if ($PSBoundParameters.ContainsKey('MaxAbandonCallPercentage'))   { $curr.maxAbandonCallPercentage   = $MaxAbandonCallPercentage }
+            if ($PSCmdlet.ParameterSetName -eq 'Power' -and $PSBoundParameters.ContainsKey('CallToAgentRatio')) {
+                $curr.callToAgentRatio = $CallToAgentRatio
             }
 
-            # Optional fields: explicit → current → omit
-            $dp  = if ($PSBoundParameters.ContainsKey('DialingPriority'))          { $DialingPriority }          else { $d.DialingPriority }
-            $dr  = if ($PSBoundParameters.ContainsKey('DialingRatio'))             { $DialingRatio }             else { $d.DialingRatio }
-            $acp = if ($PSBoundParameters.ContainsKey('MaxAbandonCallPercentage')) { $MaxAbandonCallPercentage } else { $d.MaxAbandonCallPercentage }
-            if ($null -ne $dp)  { $settings.dialingPriority          = $dp }
-            if ($null -ne $dr)  { $settings.dialingRatio             = $dr }
-            if ($null -ne $acp) { $settings.maxAbandonCallPercentage = $acp }
-
-            if ($PSCmdlet.ParameterSetName -eq 'Power') {
-                $car = if ($PSBoundParameters.ContainsKey('CallToAgentRatio')) { $CallToAgentRatio } else { $d.CallToAgentRatio }
-                if ($null -ne $car) { $settings.callToAgentRatio = $car }
-            }
-
-            # Build callAnalysis
-            $callAnalysis = @{ mode = $caMode }
-            if ($caMode -eq 'faxAndAnsweringMachine') {
-                $amdAction = if ($PSBoundParameters.ContainsKey('AmdActionType')) { $AmdActionType } elseif ($null -ne $d.AmdActionType) { $d.AmdActionType } else { 'dropCall' }
-                $vdl       = if ($PSBoundParameters.ContainsKey('AmdVoiceDetectionLevel')) { $AmdVoiceDetectionLevel } else { $d.AmdVoiceDetectionLevel }
-
-                $amdData   = @{}
-                if ($null -ne $vdl) { $amdData.voiceDetectionLevel = $vdl }
-
-                $actionObj = @{ actionType = $amdAction }
-                if ($amdAction -eq 'playPrompt') {
-                    $promptId  = if ($PSBoundParameters.ContainsKey('AmdPlayPromptId'))             { $AmdPlayPromptId }             else { $d.AmdPlayPromptId }
-                    $greetTime = if ($PSBoundParameters.ContainsKey('AmdPlayPromptMaxGreetingTime')) { $AmdPlayPromptMaxGreetingTime } else { $d.AmdPlayPromptMaxGreetingTime }
-                    if ($promptId) {
-                        $pp = @{ prompt = @{ promptId = $promptId } }
-                        if ($greetTime) { $pp.maxGreetingTime = $greetTime }
-                        $actionObj.playPrompt = $pp
-                    }
+            # callAnalysis fields
+            if ($PSBoundParameters.ContainsKey('CallAnalysisMode')) {
+                $curr.callAnalysis.mode = $CallAnalysisMode
+                # Remove answeringMachineData when switching away from faxAndAnsweringMachine
+                if ($CallAnalysisMode -ne 'faxAndAnsweringMachine') {
+                    $curr.callAnalysis.PSObject.Properties.Remove('answeringMachineData')
                 }
-                if ($amdAction -eq 'startScript') {
-                    $scriptId = if ($PSBoundParameters.ContainsKey('AmdStartScriptId')) { $AmdStartScriptId } else { $d.AmdStartScriptId }
-                    if ($scriptId) { $actionObj.startScript = @{ scriptId = $scriptId } }
+            }
+            if ($PSBoundParameters.ContainsKey('AmdVoiceDetectionLevel'))      { $curr.callAnalysis.answeringMachineData.voiceDetectionLevel                          = $AmdVoiceDetectionLevel }
+            if ($PSBoundParameters.ContainsKey('AmdActionType'))                { $curr.callAnalysis.answeringMachineData.answerMachineAction.actionType               = $AmdActionType }
+            if ($PSBoundParameters.ContainsKey('AmdPlayPromptId'))              { $curr.callAnalysis.answeringMachineData.answerMachineAction.playPrompt.promptId      = $AmdPlayPromptId }
+            if ($PSBoundParameters.ContainsKey('AmdPlayPromptMaxGreetingTime')) { $curr.callAnalysis.answeringMachineData.answerMachineAction.playPrompt.maxGreetingTime = $AmdPlayPromptMaxGreetingTime }
+            if ($PSBoundParameters.ContainsKey('AmdStartScriptId')) {
+                if (-not $curr.callAnalysis.answeringMachineData.answerMachineAction.startScript) {
+                    $curr.callAnalysis.answeringMachineData.answerMachineAction | Add-Member -MemberType NoteProperty -Name startScript -Value ([PSCustomObject]@{})
                 }
-                $amdData.answerMachineAction = $actionObj
-                $callAnalysis.answeringMachineData = $amdData
+                $curr.callAnalysis.answeringMachineData.answerMachineAction.startScript.scriptId = $AmdStartScriptId
             }
-            $settings.callAnalysis = $callAnalysis
 
-            # Build queueExpirationAction
-            $queueAction = @{ actionType = $queueType }
-            if ($queueType -eq 'playPrompt') {
-                $pid = if ($PSBoundParameters.ContainsKey('QueueExpirationPlayPromptId')) { $QueueExpirationPlayPromptId } else { $d.QueueExpirationPlayPromptId }
-                if ($pid) { $queueAction.playPrompt = @{ promptId = $pid } }
+            # queueExpirationAction fields
+            if ($PSBoundParameters.ContainsKey('QueueExpirationActionType'))    { $curr.queueExpirationAction.actionType = $QueueExpirationActionType }
+            if ($PSBoundParameters.ContainsKey('QueueExpirationPlayPromptId')) {
+                if (-not $curr.queueExpirationAction.playPrompt) {
+                    $curr.queueExpirationAction | Add-Member -MemberType NoteProperty -Name playPrompt -Value ([PSCustomObject]@{})
+                }
+                $curr.queueExpirationAction.playPrompt.promptId = $QueueExpirationPlayPromptId
             }
-            if ($queueType -eq 'startScript') {
-                $sid = if ($PSBoundParameters.ContainsKey('QueueExpirationStartScriptId')) { $QueueExpirationStartScriptId } else { $d.QueueExpirationStartScriptId }
-                if ($sid) { $queueAction.startScript = @{ scriptId = $sid } }
+            if ($PSBoundParameters.ContainsKey('QueueExpirationStartScriptId')) {
+                if (-not $curr.queueExpirationAction.startScript) {
+                    $curr.queueExpirationAction | Add-Member -MemberType NoteProperty -Name startScript -Value ([PSCustomObject]@{})
+                }
+                $curr.queueExpirationAction.startScript.scriptId = $QueueExpirationStartScriptId
             }
-            $settings.queueExpirationAction = $queueAction
-
-            $body[$mode] = $settings
         }
     }
+
+    $body = @{ dialingMode = $mode }
+    $body[$mode] = $curr
 
     $result = Invoke-Five9CloudApi "$($global:Five9.ApiBaseUrl)/dialer/v1/domains/$($global:Five9.DomainId)/campaigns/$CampaignId/dialing-settings" -Method Put -Body $body
     if ($result -ne $false) { Write-Host "Dialing settings updated for campaign '$CampaignName'."; return $result } else { Write-Host "Failed to update dialing settings for campaign '$CampaignName'."; return $false }
