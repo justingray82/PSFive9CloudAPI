@@ -23,21 +23,21 @@ Import-Module PSFive9CloudAPI -Force
 
 Connect using Username and Password. You'll be prompted to save credentials for future use:
 ```powershell
-Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "password"
+Connect-Five9Cloud -Username "user@domain.com" -Password "password"
 ```
 
 ### ApiControl Authentication (OAuth2)
 
 Connect using ClientID and ClientSecret. You'll be prompted to save credentials for future use:
 ```powershell
-Connect-Five9Cloud -DomainId "12345" -ClientID "ClientID12345" -ClientSecret "Secret67890"
+Connect-Five9Cloud -ClientID "ClientID12345" -ClientSecret "Secret67890"
 ```
 
 ### Regional Support
 
 Specify a region other than US:
 ```powershell
-Connect-Five9Cloud -DomainId "12345" -Username "user@domain.com" -Password "password" -Region "EU"
+Connect-Five9Cloud -Username "user@domain.com" -Password "password" -Region "EU"
 ```
 
 ## Requirements
