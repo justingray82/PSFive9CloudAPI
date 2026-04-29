@@ -15,5 +15,5 @@
    } else {
        $ok = Invoke-Five9CloudAuth $p.Base $p.Username $p.Password
    }
-   if ($ok -ne $false) { Write-Verbose "Auto-reconnect succeeded."; return $true } else { Write-Error "Auto-reconnect failed."; return $false  }
+   if ($ok -ne $false) { Write-Verbose "Auto-reconnect succeeded."; return $true } else { Write-Host "Auto-reconnect failed." -ForegroundColor Red; return $false  }
 }

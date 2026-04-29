@@ -5,7 +5,7 @@
         [Parameter(Mandatory)][ValidateSet('RichTextEmailOnly','RichControlsMessaging','NoRichText')][string]$RichTextOption
     )
     $assistance = Get-Five9CloudDigitalAssistance -Name $AssistanceName
-    if (-not $assistance) { Write-Error "Digital assistance '$AssistanceName' not found."; return }
+    if (-not $assistance) { Write-Host "Digital assistance '$AssistanceName' not found." -ForegroundColor Red; return }
     $enableRichTextEmailOnly = $false; $enableRichControlsMessaging = $false
     switch ($RichTextOption) {
         'RichTextEmailOnly'     { $enableRichTextEmailOnly     = $true }

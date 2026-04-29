@@ -5,5 +5,5 @@
            -Body @{ grant_type = 'client_credentials'; client_id = $Id; client_secret = $Secret; scope = 'api' }
        Set-Five9Token $r
        Write-Verbose "Connected to domain $($global:Five9.DomainId) (OAuth)"
-   } catch { Write-Error "OAuth failed: $_"; return $false }
+   } catch { Write-Host "OAuth failed" -ForegroundColor Red; return $false }
 }

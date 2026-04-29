@@ -49,7 +49,7 @@ function Set-Five9CloudSchedule {
 
     if ($ScriptParameterNames -and $ScriptParameterValues) {
         if ($ScriptParameterNames.Count -ne $ScriptParameterValues.Count) {
-            Write-Error "ScriptParameterNames and ScriptParameterValues must have the same number of elements."; return
+            Write-Host "ScriptParameterNames and ScriptParameterValues must have the same number of elements." -ForegroundColor Red; return
         }
         $body.scriptParameters = @(for ($i = 0; $i -lt $ScriptParameterNames.Count; $i++) {
             @{ name = $ScriptParameterNames[$i]; value = $ScriptParameterValues[$i] }

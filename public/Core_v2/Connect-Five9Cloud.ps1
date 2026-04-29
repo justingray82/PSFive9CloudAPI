@@ -84,7 +84,7 @@
         $global:Five9.DomainId = $whoami.domainId
         Write-Verbose "Connected as '$($whoami.username)' to domain $($whoami.domainId)."
     } catch {
-        Write-Error "Authentication succeeded but failed to resolve domain ID: $_"
+        Write-Host "Authentication succeeded but failed to resolve domain ID" -ForegroundColor Red
         $global:Five9 = @{}
         return
     }

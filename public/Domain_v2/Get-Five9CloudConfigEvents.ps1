@@ -4,7 +4,7 @@
           [datetime]$EndDate   = (Get-Date),
           [string]$TimeZoneOffset = '-04:00')
 
-    if ($EndDate -lt $StartDate) { Write-Error "End Date can not be before Start Date."; return $null }
+    if ($EndDate -lt $StartDate) { Write-Host "End Date can not be before Start Date." -ForegroundColor Red; return $null }
 
     $start = $StartDate.ToString("yyyy-MM-ddTHH:mm:ss") + $TimeZoneOffset
     $end   = $EndDate.ToString("yyyy-MM-ddTHH:mm:ss")   + $TimeZoneOffset
