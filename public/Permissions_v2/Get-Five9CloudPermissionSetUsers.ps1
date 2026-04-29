@@ -12,7 +12,7 @@
    if ($PageLimit) { $q.pageLimit = $PageLimit }
    if ($Filter)    { $q.filter    = $Filter }
 
-   if (-not $SetID) { $SetID = Resolve-PermissionSetID $PermissionSet } ; if (-not $SetID) { return }
+   if (-not $SetID) { $SetID = Resolve-Five9CloudPermissionSetID $PermissionSet } ; if (-not $SetID) { return }
    Invoke-Five9PagedApi (Build-Five9QueryUri "acl/v1/domains/$($global:Five9.DomainId)/role-sets/$($SetID)/users" $q)
 
 }
