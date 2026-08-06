@@ -118,5 +118,5 @@
     }
 
     Write-Host "Duplication of '$Username' -> '$NewUsername' complete."
-    return $dup
+
 }
