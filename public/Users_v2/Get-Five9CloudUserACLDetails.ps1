@@ -18,5 +18,3 @@
         if ($UserUID) { $result.items.$Scope } else { $result.items }
     }
 }
-
-$users = Get-Five9CloudUserACLDetails
