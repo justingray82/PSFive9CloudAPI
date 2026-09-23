@@ -35,32 +35,41 @@
     $config = if ($current.PSObject.Properties.Name -contains 'items') { $current.items[0] } else { $current }
     if (-not $config) { Write-Error "Email configuration '$EmailConfigurationId' not found."; return }
 
-    # PSCustomObject -> mutable hashtable (null fields on the object are read-only).
-    $body = @{}
-    $config.PSObject.Properties | ForEach-Object { $body[$_.Name] = $_.Value }
-
-    # Server-managed fields - returned by GET, never sent by the admin console PUT.
-    foreach ($f in 'emailConfigurationId','status','createdOn','lastActiveOn','timeout','connectionTimeout','replyToHeaders','autoPushbackInterval') { $body.Remove($f) }
+    # Build the PUT body from the fields the admin console sends (per HAR). Echoing the
+    # full GET object back saved the change but returned a 500.
+    $body = @{
+        email                      = $config.email
+        type                       = $config.type
+        host                       = $config.host
+        protocol                   = $config.protocol
+        checkServerIdentity        = $config.checkServerIdentity
+        saveProcessedEmail         = $config.saveProcessedEmail
+        autoPushbackEmail          = $config.autoPushbackEmail
+        autoPushback4LoggedinUsers = $config.autoPushback4LoggedinUsers
+    }
+    # Port matters for IMAP/POP/SMTP; EWS and Graph report 0 and the console omits it.
+    if ($config.port -gt 0) { $body.port = $config.port }
 
     # Authentication: 'key' is server-generated from the service account; the PUT omits it.
     $auth = @{}
     if ($config.authentication) { $config.authentication.PSObject.Properties | ForEach-Object { $auth[$_.Name] = $_.Value } }
     $auth.Remove('key')
 
-    # Apply only explicitly passed parameters.
+    # Apply only explicitly passed parameters. Timeout, ConnectionTimeout, ReplyToHeaders
+    # and AutoPushbackInterval are sent only when passed - the console never sends them.
     $fieldMap = [ordered]@{
         NewEmail                   = 'email'
         Protocol                   = 'protocol'
         ServerHost                 = 'host'
         Port                       = 'port'
-#        Timeout                    = 'timeout'
-#        ConnectionTimeout          = 'connectionTimeout'
+        Timeout                    = 'timeout'
+        ConnectionTimeout          = 'connectionTimeout'
         CheckServerIdentity        = 'checkServerIdentity'
         SaveProcessedEmail         = 'saveProcessedEmail'
-#        ReplyToHeaders             = 'replyToHeaders'
+        ReplyToHeaders             = 'replyToHeaders'
         AutoPushbackEmail          = 'autoPushbackEmail'
         AutoPushback4LoggedinUsers = 'autoPushback4LoggedinUsers'
-#        AutoPushbackInterval       = 'autoPushbackInterval'
+        AutoPushbackInterval       = 'autoPushbackInterval'
     }
     foreach ($p in $fieldMap.Keys) {
         if ($PSBoundParameters.ContainsKey($p)) { $body[$fieldMap[$p]] = $PSBoundParameters[$p] }
@@ -96,12 +105,10 @@
         }
     }
 
-    if ($auth.Count -gt 0) { $body.authentication = $auth } else { $body.Remove('authentication') }
-
-    # EWS/Graph report port 0; the console leaves it out of the PUT.
-    if ($body.port -eq 0) { $body.Remove('port') }
+    if ($auth.Count -gt 0) { $body.authentication = $auth }
+    if ($body.ContainsKey('port') -and $body.port -eq 0) { $body.Remove('port') }
 
     $label  = "$($body.email) ($($body.type))"
     $result = Invoke-Five9CloudApi "$baseUri/email-configurations/$EmailConfigurationId" -Method Put -Body $body
-    if ($result -ne $false) { Write-Host "Email configuration '$label' updated successfully." } else { Write-Host "Failed to update email configuration '$label'." }
+    if ($result -ne $false) { Write-Host "Email configuration '$label' updated successfully."; return $result } else { Write-Host "Failed to update email configuration '$label'."; return $false }
 }
