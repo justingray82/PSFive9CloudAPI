@@ -2,12 +2,10 @@
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('user','campaign','skill','data-table','agent-group','speed-dial','phone-number')]
+        [ValidateSet('user','campaign','skill','data-table','agent-group','speed-dial','phone-number','permission')]
         [string]$Scope
     )
 
-    # Only the parameters relevant to the chosen -Scope are surfaced (IntelliSense / tab-completion).
-    # DynamicParam keys off the value of -Scope, which static parameter sets cannot do.
     DynamicParam {
         function New-DynParam ([string]$Name, [type]$Type = [string]) {
             $attrs = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
@@ -29,6 +27,7 @@
             'agent-group'  { $dict.Add('AgentGroupName', (New-DynParam 'AgentGroupName')); $dict.Add('AgentGroupId',  (New-DynParam 'AgentGroupId')) }
             'speed-dial'   { $dict.Add('SpeedDialCode',  (New-DynParam 'SpeedDialCode'));  $dict.Add('SpeedDialId',   (New-DynParam 'SpeedDialId')) }
             'phone-number' { $dict.Add('PhoneNumber',    (New-DynParam 'PhoneNumber'));    $dict.Add('PhoneNumberId', (New-DynParam 'PhoneNumberId')) }
+            'permission'   { $dict.Add('Username',       (New-DynParam 'Username'));       $dict.Add('UserUID',       (New-DynParam 'UserUID')) }
         }
 
         return $dict
@@ -86,6 +85,14 @@
                 $PhoneNumberId = Resolve-Five9CloudPhoneNumberId $PhoneNumberId $PhoneNumber ; if (-not $PhoneNumberId) { return }
                 $label = if ($PhoneNumber) { $PhoneNumber } else { $PhoneNumberId }
                 $uri   = "$($global:Five9.ApiBaseUrl)/numbers/v1/domains/$($global:Five9.DomainId)/phone-numbers/$PhoneNumberId/tags/$TagId"
+            }
+            'permission' {
+                # Grants the user's permissions scope over the tag (ACL service), not a tag on the user record itself.
+                # HAR-confirmed: POST /acl/v1/domains/{domainId}/users/{userUID}/tags/{tagId} -> 204
+                $Username = $PSBoundParameters['Username']; $UserUID = $PSBoundParameters['UserUID']
+                if (-not $UserUID) { $UserUID = Resolve-Five9CloudUserUID $Username } ; if (-not $UserUID) { return }
+                $label = if ($Username) { $Username } else { $UserUID }
+                $uri   = "$($global:Five9.ApiBaseUrl)/acl/v1/domains/$($global:Five9.DomainId)/users/$UserUID/tags/$TagId"
             }
         }
 
