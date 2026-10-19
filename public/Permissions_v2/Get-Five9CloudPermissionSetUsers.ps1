@@ -13,6 +13,6 @@
    if ($Filter)    { $q.filter    = $Filter }
 
    if (-not $SetID) { $SetID = Resolve-Five9CloudPermissionSetID $PermissionSet } ; if (-not $SetID) { return }
-   Invoke-Five9PagedApi (Build-Five9QueryUri "acl/v1/domains/$($global:Five9.DomainId)/role-sets/$($SetID)/users" $q)
+   Invoke-Five9PagedApi (Set-Five9CloudQueryUri "acl/v1/domains/$($global:Five9.DomainId)/role-sets/$($SetID)/users" $q)
 
 }

@@ -65,7 +65,7 @@
     # ── Authenticate ───────────────────────────────────────────────────────────
     if ($PSCmdlet.ParameterSetName -eq 'OAuth') {
         $global:Five9.AuthParams = @{ ClientId = $ClientId; ClientSecret = $ClientSecret; Base = $base }
-        $ok = Invoke-Five9OAuth $base $ClientId $ClientSecret
+        $ok = Invoke-Five9CloudOAuth $base $ClientId $ClientSecret
     } else {
         if (-not $Username) { $Username = Read-Host 'Username' }
         if (-not $Password) { $Password = Read-Host 'Password' }
@@ -73,21 +73,6 @@
         $ok = Invoke-Five9CloudAuth $base $Username $Password
     }
     if ($ok -eq $false) { $global:Five9 = @{}; return }
-    # ──────────────────────────────────────────────────────────────────────────
-
-    # ── Resolve DomainId via whoami ────────────────────────────────────────────
-    try {
-        Write-Verbose "Resolving domain ID via whoami..."
-        $whoami = Invoke-RestMethod -Uri "$base/users/v1/users/whoami" `
-                                    -Headers (Get-Five9CloudAuthHeader) `
-                                    -ErrorAction Stop
-        $global:Five9.DomainId = $whoami.domainId
-        Write-Verbose "Connected as '$($whoami.username)' to domain $($whoami.domainId)."
-    } catch {
-        Write-Host "Authentication succeeded but failed to resolve domain ID" -ForegroundColor Red
-        $global:Five9 = @{}
-        return
-    }
     # ──────────────────────────────────────────────────────────────────────────
 
     # ── Reimport if updated ────────────────────────────────────────────────────
