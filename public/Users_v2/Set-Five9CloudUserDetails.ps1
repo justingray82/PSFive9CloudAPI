@@ -45,10 +45,10 @@ function Set-Five9CloudUserDetails {
     # EXCLUDED users are excluded from migration and can't be edited via this
     # endpoint (the API returns a misleading "user isn't migrated"). FIT and
     # MIGRATED are both editable, so only block the known-bad state.
-    if ($user.fitnessStatus -eq 'EXCLUDED') {
-        Write-Host "User '$UserUID' has fitnessStatus 'EXCLUDED' — excluded from migration and not editable here."
-        return $false
-    }
+    # if ($user.fitnessStatus -eq 'EXCLUDED') {
+    #    Write-Host "User '$UserUID' has fitnessStatus 'EXCLUDED' — excluded from migration and not editable here."
+    #    return $false
+    #}
 
     # MFA can only be changed on MIGRATED users — fail fast before the PUT.
     if ($PSBoundParameters.ContainsKey('Mfa') -and $user.fitnessStatus -ne 'MIGRATED') {
