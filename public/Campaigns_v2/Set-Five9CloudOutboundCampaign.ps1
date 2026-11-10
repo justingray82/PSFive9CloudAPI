@@ -21,6 +21,9 @@
         [switch]$ContinueRecordTo3rdParty,
         [switch]$ContinueRecordOnHoldCaller,
         [switch]$ContinueRecordOnHoldAgent,
+        # [bool] not [switch] so -Byot $false can turn it back off.
+        # Separate endpoint: recordings/v1/.../recording-settings (recordingSettingsEnabled = -not Byot)
+        [bool]$Byot,
 
         # Transcripts
         [switch]$OverrideDomainTranscriptSettings,
@@ -38,6 +41,21 @@
 
     if (-not $CampaignId) { $CampaignId = Resolve-Five9CloudCampaignId $CampaignId $CampaignName } ; if (-not $CampaignId) { return }
     if (-not $CampaignProfileId -and $CampaignProfileName) { $CampaignProfileId = Resolve-Five9CloudCampaignProfileId $CampaignProfileName ; if (-not $CampaignProfileId) { return } }
+
+    $label = if ($CampaignName) { $CampaignName } else { $CampaignId }
+
+    # ── BYOT (recording-settings endpoint) ──────────────────────────────
+    if ($PSBoundParameters.ContainsKey('Byot')) {
+        $rsUri    = "$($global:Five9.ApiBaseUrl)/recordings/v1/domains/$($global:Five9.DomainId)/campaigns/$CampaignId/recording-settings"
+        $rsResult = Invoke-Five9CloudApi $rsUri -Method Put -Body @{ recordingSettingsEnabled = (-not $Byot) }
+        if ($rsResult -ne $false) { Write-Host "BYOT $(if ($Byot) { 'enabled' } else { 'disabled' }) on outbound campaign '$label'." }
+        else                      { Write-Host "Failed to update BYOT on outbound campaign '$label'." }
+    }
+
+    # Skip the campaign GET/PUT entirely if nothing for that endpoint was passed
+    $hasCampaignChanges = $false
+    foreach ($k in $PSBoundParameters.Keys) { if (@('CampaignId','CampaignName','Byot') -notcontains $k) { $hasCampaignChanges = $true } }
+    if (-not $hasCampaignChanges) { return }
 
     $current = Invoke-Five9CloudApi "$($global:Five9.ApiBaseUrl)/campaigns/v1/domains/$($global:Five9.DomainId)/campaigns/$CampaignId"
     if (-not $current) { return }
@@ -86,5 +104,5 @@
     }
 
     $result = Invoke-Five9CloudApi "$($global:Five9.ApiBaseUrl)/campaigns/v1/domains/$($global:Five9.DomainId)/campaigns/$CampaignId" -Method Put -Body $body
-    if ($result -ne $false) { Write-Host "Outbound campaign '$CampaignName' updated successfully." } else { Write-Host "Failed to update outbound campaign '$CampaignName'." }
+    if ($result -ne $false) { Write-Host "Outbound campaign '$label' updated successfully." } else { Write-Host "Failed to update outbound campaign '$label'." }
 }

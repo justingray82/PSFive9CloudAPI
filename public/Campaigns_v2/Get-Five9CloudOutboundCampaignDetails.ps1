@@ -89,8 +89,12 @@
         if ($Include -contains 'Recordings') {
             $rs = Invoke-Five9CloudApi "$base/recordings/v1/domains/$d/campaigns/$id/recording-settings"
             $rawOut.RecordingSettings = $rs
+            # BYOT is the inverse of recordingSettingsEnabled (HAR: enabling BYOT sent recordingSettingsEnabled=false)
+            $byot = $null
+            if ($rs) { $byot = -not [bool]$rs.recordingSettingsEnabled }
             $rec = $c.recordings
             $out.Recordings = [PSCustomObject]@{
+                Byot                       = $byot
                 AutoRecord                 = $rec.autoRecord
                 UserCanControlRecording    = $rec.userCanControlRecording
                 RecordQueueCallbacks       = $rec.recordQueueCallbacks
@@ -98,7 +102,6 @@
                 ContinueRecordTo3rdParty   = $rec.continueRecordTo3rdParty
                 ContinueRecordOnHoldCaller = $rec.continueRecordOnHoldCaller
                 ContinueRecordOnHoldAgent  = $rec.continueRecordOnHoldAgent
-                RecordingSettingsEnabled   = $rs.recordingSettingsEnabled
             }
         }
 
