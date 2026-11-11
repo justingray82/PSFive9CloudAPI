@@ -1,51 +1,22 @@
-# PSFive9CloudAPI
+**This repository has moved and is no longer maintained here.**
 
-A PowerShell module designed to simplify interacting with the Five9 Cloud APIs. It supports PowerShell 5.1 and PowerShell 7+, enabling you to authenticate using OAuth2 or Basic authentication and perform operations against Five9 endpoints.
 
-## Features
+Active development now lives at:
+**[Five9DeveloperProgram/PSFive9CloudAPI](https://github.com/Five9DeveloperProgram/PSFive9CloudAPI)**
 
-- Easy-to-use PowerShell functions for common Five9 API tasks
-- Supports multiple authentication methods:
-  - **ApiControl**: OAuth2 authentication with Client ID/Client Secret
-  - **CloudAuth**: Basic authentication with Username/Password
-  - **NGRest**: Basic authentication with Username/Password
-- Compatible with multiple regions: US, CA, EU, IN, UK
 
-## Quick Installation
-```powershell
-irm "https://raw.githubusercontent.com/justingray82/PSFive9CloudAPI/main/Install-PSFive9CloudAPI.ps1" | iex
-Import-Module PSFive9CloudAPI -Force
-```
+Please file issues, submit pull requests, and check for new releases at the new location.
+## About
 
-## Usage
 
-### CloudAuth and NG REST Authentication (Basic)
+This repository is preserved for reference and history. All commits up to the migration remain available here, but no further updates will be made.
 
-Connect using Username and Password. You'll be prompted to save credentials for future use:
-```powershell
-Connect-Five9Cloud -Username "user@domain.com" -Password "password"
-```
 
-### ApiControl Authentication (OAuth2)
+## Why the move?
 
-Connect using ClientID and ClientSecret. You'll be prompted to save credentials for future use:
-```powershell
-Connect-Five9Cloud -ClientID "ClientID12345" -ClientSecret "Secret67890"
-```
 
-### Regional Support
+The project was migrated to an enterprise GitHub organization to support ongoing development and maintenance.
 
-Specify a region other than US:
-```powershell
-Connect-Five9Cloud -Username "user@domain.com" -Password "password" -Region "EU"
-```
-
-## Requirements
-
-- PowerShell 5.1 or later
-- API access to Five9 with valid credentials
-- Network access to Five9 Cloud API endpoints
-- Admin Console Application Access
 
 ## Disclaimer
 
